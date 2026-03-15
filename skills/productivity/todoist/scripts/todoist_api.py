@@ -115,6 +115,23 @@ def _minutes_to_time(mins):
     return f"{mins // 60:02d}:{mins % 60:02d}"
 
 
+def _user_to_api_priority(user_priority: int) -> int:
+    """Convert user-facing priority (P1=urgent .. P4=normal) to API value.
+
+    The Todoist API uses an inverted scale:
+      App P1 (most urgent) = API priority 4
+      App P2               = API priority 3
+      App P3               = API priority 2
+      App P4 (default)     = API priority 1
+    """
+    return 5 - user_priority
+
+
+def _api_to_user_priority(api_priority: int) -> int:
+    """Convert API priority value to user-facing priority (P1=urgent .. P4=normal)."""
+    return 5 - api_priority
+
+
 def _task_summary(task):
     """Extract a compact summary from a Todoist task object."""
     due = task.get("due") or {}
@@ -134,7 +151,7 @@ def _task_summary(task):
             "amount": duration.get("amount"),
             "unit": duration.get("unit", "minute"),
         } if duration else None,
-        "priority": task.get("priority", 1),
+        "priority": _api_to_user_priority(task.get("priority", 1)),
         "project_id": task.get("project_id", ""),
         "labels": task.get("labels", []),
         "url": task.get("url", ""),
@@ -208,7 +225,7 @@ def create_task(args):
     if args.project_id:
         body["project_id"] = args.project_id
     if args.priority is not None:
-        body["priority"] = args.priority
+        body["priority"] = _user_to_api_priority(args.priority)
     if args.labels:
         body["labels"] = [l.strip() for l in args.labels.split(",")]
     if args.deadline:
@@ -243,7 +260,7 @@ def update_task(args):
     if args.project_id is not None:
         body["project_id"] = args.project_id
     if args.priority is not None:
-        body["priority"] = args.priority
+        body["priority"] = _user_to_api_priority(args.priority)
     if args.labels is not None:
         body["labels"] = [l.strip() for l in args.labels.split(",")]
     if args.deadline is not None:
@@ -421,7 +438,7 @@ def get_scheduled(args):
                     "start": _minutes_to_time(start_mins),
                     "end": _minutes_to_time(min(end_mins, 24 * 60 - 1)),
                     "duration_minutes": duration_mins,
-                    "priority": task.get("priority", 1),
+                    "priority": _api_to_user_priority(task.get("priority", 1)),
                     "labels": task.get("labels", []),
                     "_start_mins": start_mins,
                     "_end_mins": end_mins,
@@ -529,7 +546,7 @@ def main():
                     help="Duration in minutes")
     p.add_argument("--project-id", default=None, help="Project ID")
     p.add_argument("--priority", type=int, default=None,
-                    help="Priority 1-4 (4=most urgent)")
+                    help="Priority 1-4 (1=most urgent, matches Todoist P1-P4)")
     p.add_argument("--labels", default=None,
                     help="Comma-separated labels")
     p.add_argument("--deadline", default=None,

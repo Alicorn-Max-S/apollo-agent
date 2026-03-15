@@ -56,14 +56,14 @@ $TODOIST list_tasks --label "school"
 # Get a single task's details
 $TODOIST get_task 1234567890
 
-# Create a task with all fields
-$TODOIST create_task --content "Write research paper intro" --due-datetime "2026-03-16T10:00:00Z" --duration 120 --priority 3 --labels "school,writing" --deadline "2026-03-20"
+# Create a task with all fields (priority 2 = P2/high, matches Todoist app)
+$TODOIST create_task --content "Write research paper intro" --due-datetime "2026-03-16T10:00:00Z" --duration 120 --priority 2 --labels "school,writing" --deadline "2026-03-20"
 
 # Create a task with natural language due date
 $TODOIST create_task --content "Team meeting" --due-string "tomorrow at 2pm" --duration 60
 
-# Update a task
-$TODOIST update_task 1234567890 --duration 90 --priority 4
+# Update a task (priority 1 = P1/urgent, matches Todoist app)
+$TODOIST update_task 1234567890 --duration 90 --priority 1
 
 # Mark a task as complete
 $TODOIST complete_task 1234567890
@@ -176,11 +176,14 @@ Before estimating, check your memory for past duration corrections. Search for e
 
 Each task gets its own duration, priority, labels, and scheduled time slot. Present the full breakdown to the user for confirmation before creating anything. The project groups everything together so the user can track overall progress.
 
-**Priority** — Infer from urgency and importance cues:
-- 1 (normal): Routine tasks, no deadline pressure
-- 2 (medium): Somewhat important, soft deadline
-- 3 (high): Important with a clear deadline approaching
-- 4 (urgent): Overdue, due today, or explicitly urgent
+**Priority** — Uses the same P1–P4 scale as the Todoist app (P1 = most urgent). The `--priority` flag accepts 1–4 where 1 is most urgent. The script automatically converts to the inverted API values internally.
+
+Infer priority from urgency and importance cues. These are default guidelines — the user can override them at any time:
+
+- **P1 (urgent)** `--priority 1`: Overdue tasks. Due today with a hard deadline. Explicitly marked urgent by the user. Exam/submission due within 24 hours.
+- **P2 (high)** `--priority 2`: Important task with a clear deadline approaching (within 2–3 days). Tasks the user described as "important" or "high priority". Assignments due this week.
+- **P3 (medium)** `--priority 3`: Somewhat important with a soft or distant deadline. Recurring responsibilities. Tasks due next week.
+- **P4 (normal/default)** `--priority 4`: Routine tasks with no deadline pressure. Nice-to-do items. No urgency or importance cues present.
 
 **Labels** — First run `$TODOIST list_labels` to see the user's existing labels. Reuse existing labels whenever they fit. Infer label from context:
 - Academic/homework/studying → look for "school", "homework", "study" labels
@@ -202,7 +205,7 @@ If you estimated ANY field (duration, priority, labels, or deadline) rather than
 Here's what I'll create:
 - Task: "Write research paper intro"
 - Duration: 120 min (estimated — complex writing task)
-- Priority: 3/High (estimated — academic deadline approaching)
+- Priority: P2/High (estimated — academic deadline approaching)
 - Labels: school (estimated — matches your existing label)
 - Deadline: 2026-03-20 (from "by next Friday")
 - Scheduled: 2026-03-16 10:00–12:00 (first available 2h gap)
@@ -311,6 +314,8 @@ curl -s -H "Authorization: Bearer $TODOIST_API_TOKEN" \
   "https://api.todoist.com/api/v1/tasks/filter?query=today"
 
 # Create a task with duration (duration is now a nested object)
+# NOTE: API priority is inverted from the app — P1 (urgent) = API priority 4, P4 (normal) = API priority 1.
+# The todoist_api.py script handles this conversion automatically.
 curl -s -X POST -H "Authorization: Bearer $TODOIST_API_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"content": "Team meeting", "due_datetime": "2026-03-16T14:00:00Z", "duration": {"amount": 60, "unit": "minute"}, "priority": 3, "labels": ["work"]}' \
@@ -338,3 +343,4 @@ curl -s -H "Authorization: Bearer $TODOIST_API_TOKEN" \
 | Task filtering | `GET /tasks?filter=...` | `GET /tasks/filter?query=...` |
 | Duration in request body | `"duration": 60, "duration_unit": "minute"` | `"duration": {"amount": 60, "unit": "minute"}` |
 | IDs | Numeric (e.g. `7246645180`) | Alphanumeric (e.g. `69mF7QcCj9JmXxp8`) |
+| Priority | Inverted: API 4 = app P1 (urgent), API 1 = app P4 (normal) | Same inversion — `todoist_api.py` converts automatically |
