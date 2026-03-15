@@ -16,7 +16,7 @@ CANVAS_SCRIPT_DIR = os.path.join(
     os.pardir,
     "skills",
     "productivity",
-    "canvas",
+    "canvas-lms",
     "scripts",
 )
 sys.path.insert(0, os.path.abspath(CANVAS_SCRIPT_DIR))

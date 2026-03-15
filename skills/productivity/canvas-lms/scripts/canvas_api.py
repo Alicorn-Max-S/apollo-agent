@@ -64,7 +64,7 @@ def _check_config():
         print(
             f"Missing required environment variables: {', '.join(missing)}\n"
             "Set them in ~/.hermes/.env or export them in your shell.\n"
-            "See the canvas skill SKILL.md for setup instructions.",
+            "See the canvas-lms skill SKILL.md for setup instructions.",
             file=sys.stderr,
         )
         sys.exit(1)

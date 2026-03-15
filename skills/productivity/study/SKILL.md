@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [Study, Quiz, Flashcards, Practice, Education, Spaced Repetition, School]
-    related_skills: [file-analysis, canvas, todoist, document-analysis, text-analysis]
+    related_skills: [file-analysis, canvas-lms, todoist, document-analysis, text-analysis]
 ---
 
 # Study — Interactive Study Sessions & Performance Tracking
@@ -108,7 +108,7 @@ $STUDY list_files
 
 Also check for upcoming deadlines and tasks:
 
-- **Canvas assignments**: `skill_view("canvas")` → list pending assignments, especially those due within the next 3 days
+- **Canvas assignments**: `skill_view("canvas-lms")` → list pending assignments, especially those due within the next 3 days
 - **Todoist tasks**: `skill_view("todoist")` → list tasks with "study" or "school" labels that are due soon
 
 ### Step 3: Present a Smart Suggestion

@@ -11,7 +11,7 @@ metadata:
 A curated set of skills for high school students. Use `skill_view("<skill-name>")` to load detailed instructions for any of these.
 
 ## Homework & Assignments
-- **canvas** — Access Canvas LMS: view courses, assignments, grades, submit work
+- **canvas-lms** — Access Canvas LMS: view courses, assignments, grades, submit work
 - **todoist** — Track homework and deadlines with intelligent scheduling
 - **notion** — Organize notes and projects
 - **obsidian** — Markdown note-taking vault
