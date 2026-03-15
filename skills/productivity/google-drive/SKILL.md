@@ -30,22 +30,25 @@ When a user shares a Google Drive link, **always start here** — follow this fl
 ### Step 0: Parse the URL
 
 ```bash
-GDRIVE="python ~/.hermes/skills/productivity/google-drive/scripts/gdrive_read.py"
+GDRIVE="python3 ~/.hermes/skills/productivity/google-drive/scripts/gdrive_read.py"
 $GDRIVE parse "THE_DRIVE_URL"
 ```
 
 This returns JSON with `file_id`, `file_type`, `export_url`, and `view_url`.
 
-### Step 1: Try Direct Fetch (No Auth Needed)
+### Step 1: Try Direct Fetch via Terminal (No Auth Needed)
 
-Try fetching the export URL directly using `web_extract`. This works for files shared as "Anyone with the link":
+Try fetching the export URL directly using `curl` in the terminal. This works for files shared as "Anyone with the link":
 
+```bash
+curl -sL "EXPORT_URL_FROM_STEP_0"
 ```
-web_extract(urls=[export_url], format="markdown")
-```
 
-- If this returns the **document content** (actual text, not a login page or HTML error) → done! Return the content to the user.
-- If this returns a **Google login page** or an error → the file requires authentication. Continue to Step 2.
+- If this returns the **document content** (actual text / CSV data, not HTML) → done! Return the content to the user.
+- If this returns **HTML containing "Sign in"** or a Google login page → the file requires authentication. Continue to Step 2.
+
+**Alternatively**, if you have the `web_extract` tool available, you can use it instead of curl:
+Use the `web_extract` **tool** (not a Python import — call it as a tool): `web_extract(urls=["EXPORT_URL"], format="markdown")`
 
 ### Step 2: Check Memory for Auth Method
 
@@ -54,7 +57,7 @@ Look in your memory for an existing `google-drive-auth` entry. If found, skip to
 ### Step 3: Check Existing Google Workspace Auth
 
 ```bash
-python ~/.hermes/skills/productivity/google-workspace/scripts/setup.py --check 2>/dev/null
+python3 ~/.hermes/skills/productivity/google-workspace/scripts/setup.py --check 2>/dev/null
 ```
 
 If output is `AUTHENTICATED`, use **Method A (API Mode)** below. Save to memory:
@@ -64,16 +67,21 @@ memory(action="add", target="memory", content="google-drive-auth: API mode via g
 
 ### Step 4: Check if Browser Tools Are Available
 
-Before trying browser SSO, check if browser tools are available by looking at your available tools list. If `browser_navigate` is NOT in your tools:
+Before trying browser SSO, check if the `browser_navigate` **tool** is in your available tools list. **Do NOT try to import it as Python — it is an agent tool you call directly.**
 
-Tell the user:
-> "Browser tools aren't available in this environment. To enable browser-based Google Drive access, run: `npm install` in the hermes-agent directory, then `npx agent-browser install --with-deps`. Alternatively, you can make the document publicly accessible (Share → Anyone with the link → Viewer)."
+If `browser_navigate` is NOT in your tools list, tell the user:
+
+> "Browser tools aren't available in this environment. To enable browser-based Google Drive access, run these commands in a terminal:
+> ```
+> cd /path/to/hermes-agent && npm install && npx agent-browser install --with-deps
+> ```
+> Then restart the agent. Alternatively, you can make the document publicly accessible (Share → Anyone with the link → Viewer)."
 
 If browser tools ARE available, continue.
 
 ### Step 5: Ask About Developer Console Access
 
-Ask the user:
+Use the `clarify` **tool** (not a Python function — call it as a tool):
 
 ```
 clarify("The file requires authentication. Can you access the Google Developer Console (console.cloud.google.com) with your Google account? If you're using a school or enterprise account, you may not have access.", ["Yes, I can access it", "No, I cannot / I'm not sure"])
@@ -81,6 +89,8 @@ clarify("The file requires authentication. Can you access the Google Developer C
 
 - If **yes**: guide them through the google-workspace skill setup (load that skill with `skill_view("google-workspace")`), then use API mode.
 - If **no**: proceed with **Method B (Browser SSO Mode)** below.
+
+**IMPORTANT**: All tool references in this skill (like `browser_navigate`, `browser_snapshot`, `browser_click`, `browser_type`, `browser_press`, `web_extract`, `clarify`, `memory`) are **agent tools** — invoke them as tool calls, NOT as Python imports or function calls in `execute_code`.
 
 ---
 
@@ -91,7 +101,7 @@ Delegate to the existing google-workspace skill's `google_api.py` for content re
 ### Setup
 
 ```bash
-GAPI="python ~/.hermes/skills/productivity/google-workspace/scripts/google_api.py"
+GAPI="python3 ~/.hermes/skills/productivity/google-workspace/scripts/google_api.py"
 ```
 
 ### Reading Content
@@ -99,7 +109,7 @@ GAPI="python ~/.hermes/skills/productivity/google-workspace/scripts/google_api.p
 First, parse the URL to get the file ID:
 
 ```bash
-GDRIVE="python ~/.hermes/skills/productivity/google-drive/scripts/gdrive_read.py"
+GDRIVE="python3 ~/.hermes/skills/productivity/google-drive/scripts/gdrive_read.py"
 $GDRIVE parse "THE_DRIVE_URL"
 ```
 
@@ -124,7 +134,7 @@ Follow this procedure every time the user shares a Google Drive link:
 **1. Parse the URL:**
 
 ```bash
-GDRIVE="python ~/.hermes/skills/productivity/google-drive/scripts/gdrive_read.py"
+GDRIVE="python3 ~/.hermes/skills/productivity/google-drive/scripts/gdrive_read.py"
 $GDRIVE parse "THE_DRIVE_URL"
 ```
 
