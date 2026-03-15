@@ -1626,8 +1626,46 @@ def _reset_config_provider() -> Path:
     return config_path
 
 
-def _prompt_model_selection(model_ids: List[str], current_model: str = "") -> Optional[str]:
-    """Interactive model selection. Puts current_model first with a marker. Returns chosen model ID or None."""
+def _get_recent_models(
+    provider_model_ids: Optional[List[str]] = None,
+    limit: int = 3,
+) -> List[str]:
+    """Return most recently used model IDs, optionally filtered to a provider.
+
+    When *provider_model_ids* is given, only models in that list are returned.
+    Otherwise returns global recent models (any provider).  Returns ``[]`` on
+    any error so callers never need to handle failures.
+    """
+    try:
+        from hermes_state import SessionDB
+        db = SessionDB()
+        all_recent = db.recently_used_models(limit=30)
+        db.close()
+    except Exception:
+        return []
+
+    if provider_model_ids is not None:
+        provider_set = set(provider_model_ids)
+        return [m for m in all_recent if m in provider_set][:limit]
+    return all_recent[:limit]
+
+
+_MAX_DISPLAY_MODELS = 15
+
+
+def _prompt_model_selection(
+    model_ids: List[str],
+    current_model: str = "",
+    provider_recent: Optional[List[str]] = None,
+    provider_label: str = "",
+) -> Optional[str]:
+    """Interactive model selection with optional 'Recent' and 'All Models' sections.
+
+    When *provider_recent* is provided, shows a "Recent" section at the top
+    (up to ~1/3 of the 15-model cap), then an "All Models" section with the
+    remaining models in original catalog order.  No duplicates between sections.
+    Returns chosen model ID or ``None``.
+    """
     # Reorder: current model first, then the rest (deduplicated)
     ordered = []
     if current_model and current_model in model_ids:
@@ -1642,15 +1680,50 @@ def _prompt_model_selection(model_ids: List[str], current_model: str = "") -> Op
             return f"{mid}  ← currently in use"
         return mid
 
-    # Default cursor on the current model (index 0 if it was reordered to top)
+    # Compute section sizes: ~2:1 ratio (remaining:recent), max 15 total
+    if provider_recent:
+        max_recent = min(len(provider_recent), _MAX_DISPLAY_MODELS // 3)
+        max_remaining = _MAX_DISPLAY_MODELS - max_recent
+        recent_to_show = provider_recent[:max_recent]
+    else:
+        recent_to_show = []
+        max_remaining = _MAX_DISPLAY_MODELS
+
+    # Build a flat entries list: (display_string, model_id | "__custom__" | "__skip__" | None)
+    # None entries are non-selectable section separators.
+    seen: set = set()
+    entries: list = []
+
+    # Section 1: Recent from this provider
+    if recent_to_show:
+        header = f"  ── Recent ({provider_label or 'this provider'}) ──"
+        entries.append((header, None))
+        for mid in recent_to_show:
+            entries.append((f"  {_label(mid)}", mid))
+            seen.add(mid)
+
+    # Section 2: Remaining models in original order, excluding recent
+    remaining = [m for m in ordered if m not in seen][:max_remaining]
+    if remaining:
+        if recent_to_show:
+            entries.append(("  ── All Models ──", None))
+        for mid in remaining:
+            entries.append((f"  {_label(mid)}", mid))
+
+    entries.append(("  Enter custom model name", "__custom__"))
+    entries.append(("  Skip (keep current)", "__skip__"))
+
+    # Default cursor: first selectable entry
     default_idx = 0
+    for i, (_, val) in enumerate(entries):
+        if val is not None:
+            default_idx = i
+            break
 
     # Try arrow-key menu first, fall back to number input
     try:
         from simple_term_menu import TerminalMenu
-        choices = [f"  {_label(mid)}" for mid in ordered]
-        choices.append("  Enter custom model name")
-        choices.append("  Skip (keep current)")
+        choices = [e[0] for e in entries]
         menu = TerminalMenu(
             choices,
             cursor_index=default_idx,
@@ -1665,38 +1738,47 @@ def _prompt_model_selection(model_ids: List[str], current_model: str = "") -> Op
         if idx is None:
             return None
         print()
-        if idx < len(ordered):
-            return ordered[idx]
-        elif idx == len(ordered):
+        _, val = entries[idx]
+        if val is None:
+            return None
+        if val == "__custom__":
             custom = input("Enter model name: ").strip()
             return custom if custom else None
-        return None
+        if val == "__skip__":
+            return None
+        return val
     except (ImportError, NotImplementedError):
         pass
 
-    # Fallback: numbered list
+    # Fallback: numbered list (separators are unnumbered)
     print("Select default model:")
-    for i, mid in enumerate(ordered, 1):
-        print(f"  {i}. {_label(mid)}")
-    n = len(ordered)
-    print(f"  {n + 1}. Enter custom model name")
-    print(f"  {n + 2}. Skip (keep current)")
+    index_to_value: dict = {}
+    num = 0
+    for display, val in entries:
+        if val is None:
+            print(display)
+        else:
+            num += 1
+            index_to_value[num] = val
+            print(f"  {num}. {display.strip()}")
     print()
 
     while True:
         try:
-            choice = input(f"Choice [1-{n + 2}] (default: skip): ").strip()
+            choice = input(f"Choice [1-{num}] (default: skip): ").strip()
             if not choice:
                 return None
             idx = int(choice)
-            if 1 <= idx <= n:
-                return ordered[idx - 1]
-            elif idx == n + 1:
+            val = index_to_value.get(idx)
+            if val is None:
+                print(f"Please enter 1-{num}")
+                continue
+            if val == "__custom__":
                 custom = input("Enter model name: ").strip()
                 return custom if custom else None
-            elif idx == n + 2:
+            if val == "__skip__":
                 return None
-            print(f"Please enter 1-{n + 2}")
+            return val
         except ValueError:
             print("Please enter a number")
         except (KeyboardInterrupt, EOFError):
@@ -2068,7 +2150,9 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
 
             print()
             if model_ids:
-                selected_model = _prompt_model_selection(model_ids)
+                provider_recent = _get_recent_models(model_ids, limit=5)
+                selected_model = _prompt_model_selection(
+                    model_ids, provider_recent=provider_recent, provider_label="Nous Portal")
                 if selected_model:
                     _save_model_choice(selected_model)
                     print(f"Default model set to: {selected_model}")

@@ -718,7 +718,7 @@ def cmd_model(args):
         resolve_provider, get_provider_auth_state, PROVIDER_REGISTRY,
         _prompt_model_selection, _save_model_choice, _update_config_for_provider,
         resolve_nous_runtime_credentials, fetch_nous_models, AuthError, format_auth_error,
-        _login_nous,
+        _login_nous, _get_recent_models,
     )
     from hermes_cli.config import load_config, save_config, get_env_value, save_env_value
 
@@ -824,12 +824,38 @@ def cmd_model(args):
             ordered.append((key, label))
     ordered.append(("cancel", "Cancel"))
 
-    provider_idx = _prompt_provider_choice([label for _, label in ordered])
-    if provider_idx is None or ordered[provider_idx][0] == "cancel":
+    # Build combined menu: "Previously Used" models at top, then providers
+    recent_global = _get_recent_models(limit=3)
+    combined = []
+    if recent_global:
+        combined.append(("__sep_recent__", "── Previously Used ──"))
+        for mid in recent_global:
+            lbl = f"{mid}  ← currently in use" if mid == current_model else mid
+            combined.append((f"__recent:{mid}", lbl))
+        combined.append(("__sep_providers__", "── Providers ──"))
+    for key, label in ordered:
+        combined.append((key, label))
+
+    provider_idx = _prompt_provider_choice([label for _, label in combined])
+    if provider_idx is None:
         print("No change.")
         return
 
-    selected_provider = ordered[provider_idx][0]
+    selected_key = combined[provider_idx][0]
+
+    # Handle recently used model direct-switch
+    if selected_key.startswith("__recent:"):
+        model_id = selected_key[len("__recent:"):]
+        _save_model_choice(model_id)
+        print(f"Switched to: {model_id}")
+        return
+
+    # Handle separator or cancel selection
+    if selected_key.startswith("__sep_") or selected_key == "cancel":
+        print("No change.")
+        return
+
+    selected_provider = selected_key
 
     # Step 2: Provider-specific setup + model selection
     if selected_provider == "openrouter":
@@ -893,7 +919,7 @@ def _prompt_provider_choice(choices):
 
 def _model_flow_openrouter(config, current_model=""):
     """OpenRouter provider: ensure API key, then pick model."""
-    from hermes_cli.auth import _prompt_model_selection, _save_model_choice, deactivate_provider
+    from hermes_cli.auth import _prompt_model_selection, _save_model_choice, deactivate_provider, _get_recent_models
     from hermes_cli.config import get_env_value, save_env_value
 
     api_key = get_env_value("OPENROUTER_API_KEY")
@@ -916,7 +942,9 @@ def _model_flow_openrouter(config, current_model=""):
     from hermes_cli.models import model_ids
     openrouter_models = model_ids()
 
-    selected = _prompt_model_selection(openrouter_models, current_model=current_model)
+    provider_recent = _get_recent_models(openrouter_models, limit=5)
+    selected = _prompt_model_selection(openrouter_models, current_model=current_model,
+                                       provider_recent=provider_recent, provider_label="OpenRouter")
     if selected:
         # Clear any custom endpoint and set provider to openrouter
         if get_env_value("OPENAI_BASE_URL"):
@@ -946,7 +974,7 @@ def _model_flow_nous(config, current_model=""):
         get_provider_auth_state, _prompt_model_selection, _save_model_choice,
         _update_config_for_provider, resolve_nous_runtime_credentials,
         fetch_nous_models, AuthError, format_auth_error,
-        _login_nous, PROVIDER_REGISTRY,
+        _login_nous, PROVIDER_REGISTRY, _get_recent_models,
     )
     from hermes_cli.config import get_env_value, save_env_value
     import argparse
@@ -1002,7 +1030,9 @@ def _model_flow_nous(config, current_model=""):
         print("No models returned by the inference API.")
         return
 
-    selected = _prompt_model_selection(model_ids, current_model=current_model)
+    provider_recent = _get_recent_models(model_ids, limit=5)
+    selected = _prompt_model_selection(model_ids, current_model=current_model,
+                                       provider_recent=provider_recent, provider_label="Nous Portal")
     if selected:
         _save_model_choice(selected)
         # Reactivate Nous as the provider and update config
@@ -1022,7 +1052,7 @@ def _model_flow_openai_codex(config, current_model=""):
     from hermes_cli.auth import (
         get_codex_auth_status, _prompt_model_selection, _save_model_choice,
         _update_config_for_provider, _login_openai_codex,
-        PROVIDER_REGISTRY, DEFAULT_CODEX_BASE_URL,
+        PROVIDER_REGISTRY, DEFAULT_CODEX_BASE_URL, _get_recent_models,
     )
     from hermes_cli.codex_models import get_codex_model_ids
     from hermes_cli.config import get_env_value, save_env_value
@@ -1052,7 +1082,9 @@ def _model_flow_openai_codex(config, current_model=""):
 
     codex_models = get_codex_model_ids(access_token=_codex_token)
 
-    selected = _prompt_model_selection(codex_models, current_model=current_model)
+    provider_recent = _get_recent_models(codex_models, limit=5)
+    selected = _prompt_model_selection(codex_models, current_model=current_model,
+                                       provider_recent=provider_recent, provider_label="Codex")
     if selected:
         _save_model_choice(selected)
         _update_config_for_provider("openai-codex", DEFAULT_CODEX_BASE_URL)
@@ -1391,7 +1423,7 @@ def _model_flow_kimi(config, current_model=""):
     """
     from hermes_cli.auth import (
         PROVIDER_REGISTRY, KIMI_CODE_BASE_URL, _prompt_model_selection,
-        _save_model_choice, deactivate_provider,
+        _save_model_choice, deactivate_provider, _get_recent_models,
     )
     from hermes_cli.config import get_env_value, save_env_value, load_config, save_config
 
@@ -1453,7 +1485,9 @@ def _model_flow_kimi(config, current_model=""):
         model_list = _PROVIDER_MODELS.get(provider_id, [])
 
     if model_list:
-        selected = _prompt_model_selection(model_list, current_model=current_model)
+        provider_recent = _get_recent_models(model_list, limit=5)
+        selected = _prompt_model_selection(model_list, current_model=current_model,
+                                           provider_recent=provider_recent, provider_label="Kimi")
     else:
         try:
             selected = input("Enter model name: ").strip()
@@ -1489,7 +1523,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
     """Generic flow for API-key providers (z.ai, MiniMax)."""
     from hermes_cli.auth import (
         PROVIDER_REGISTRY, _prompt_model_selection, _save_model_choice,
-        _update_config_for_provider, deactivate_provider,
+        _update_config_for_provider, deactivate_provider, _get_recent_models,
     )
     from hermes_cli.config import get_env_value, save_env_value, load_config, save_config
 
@@ -1553,7 +1587,9 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
         # else: no defaults either, will fall through to raw input
 
     if model_list:
-        selected = _prompt_model_selection(model_list, current_model=current_model)
+        provider_recent = _get_recent_models(model_list, limit=5)
+        selected = _prompt_model_selection(model_list, current_model=current_model,
+                                           provider_recent=provider_recent, provider_label=pconfig.name)
     else:
         try:
             selected = input("Model name: ").strip()
@@ -1649,7 +1685,7 @@ def _model_flow_anthropic(config, current_model=""):
     import os
     from hermes_cli.auth import (
         PROVIDER_REGISTRY, _prompt_model_selection, _save_model_choice,
-        _update_config_for_provider, deactivate_provider,
+        _update_config_for_provider, deactivate_provider, _get_recent_models,
     )
     from hermes_cli.config import (
         get_env_value, save_env_value, load_config, save_config,
@@ -1743,7 +1779,9 @@ def _model_flow_anthropic(config, current_model=""):
     # Model selection
     model_list = _PROVIDER_MODELS.get("anthropic", [])
     if model_list:
-        selected = _prompt_model_selection(model_list, current_model=current_model)
+        provider_recent = _get_recent_models(model_list, limit=5)
+        selected = _prompt_model_selection(model_list, current_model=current_model,
+                                           provider_recent=provider_recent, provider_label="Anthropic")
     else:
         try:
             selected = input("Model name (e.g., claude-sonnet-4-20250514): ").strip()
