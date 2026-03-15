@@ -1,5 +1,5 @@
 ---
-name: canvas
+name: canvas-lms
 description: Canvas LMS integration — list courses, fetch assignment details, submit assignments, and track completion locally.
 version: 2.0.0
 author: community
@@ -42,7 +42,7 @@ Before proceeding, verify that CANVAS_API_TOKEN and CANVAS_BASE_URL environment 
 ## Usage
 
 ```bash
-CANVAS="python ~/.hermes/skills/productivity/canvas/scripts/canvas_api.py"
+CANVAS="python ~/.hermes/skills/productivity/canvas-lms/scripts/canvas_api.py"
 
 # List all active courses
 $CANVAS list_courses --enrollment-state active

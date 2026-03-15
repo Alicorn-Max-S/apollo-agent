@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Diagnostic script for debugging Canvas skill environment variable issues.
 
-Run this to see exactly why the canvas skill thinks your credentials are missing.
+Run this to see exactly why the canvas-lms skill thinks your credentials are missing.
 
 Usage:
     python scripts/debug_canvas_env.py
