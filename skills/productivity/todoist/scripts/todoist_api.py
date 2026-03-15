@@ -12,6 +12,7 @@ Usage:
   python todoist_api.py complete_task TASK_ID
   python todoist_api.py delete_task TASK_ID
   python todoist_api.py list_projects
+  python todoist_api.py create_project --name "Project Name" [--color COLOR] [--parent-id ID]
   python todoist_api.py list_labels
   python todoist_api.py get_scheduled DATE [--working-hours "08:00-22:00"]
 """
@@ -315,6 +316,35 @@ def list_projects(args):
     print(json.dumps(output, indent=2))
 
 
+def create_project(args):
+    """Create a new project."""
+    _check_config()
+    body = {"name": args.name}
+    if args.color:
+        body["color"] = args.color
+    if args.parent_id:
+        body["parent_id"] = args.parent_id
+    if args.is_favorite:
+        body["is_favorite"] = True
+    try:
+        resp = requests.post(f"{BASE_URL}/projects", headers=_headers(),
+                             json=body, timeout=30)
+        resp.raise_for_status()
+    except requests.HTTPError as e:
+        print(f"API error: {e.response.status_code} {e.response.text}",
+              file=sys.stderr)
+        sys.exit(1)
+    project = resp.json()
+    print(json.dumps({
+        "id": project["id"],
+        "name": project.get("name", ""),
+        "color": project.get("color", ""),
+        "is_inbox_project": project.get("is_inbox_project", False),
+        "is_favorite": project.get("is_favorite", False),
+        "order": project.get("order", 0),
+    }, indent=2))
+
+
 def list_labels(args):
     """List all user labels."""
     _check_config()
@@ -534,6 +564,14 @@ def main():
     # --- list_projects ---
     p = sub.add_parser("list_projects", help="List all projects")
     p.set_defaults(func=list_projects)
+
+    # --- create_project ---
+    p = sub.add_parser("create_project", help="Create a new project")
+    p.add_argument("--name", required=True, help="Project name")
+    p.add_argument("--color", default=None, help="Project color")
+    p.add_argument("--parent-id", default=None, help="Parent project ID")
+    p.add_argument("--is-favorite", action="store_true", help="Mark as favorite")
+    p.set_defaults(func=create_project)
 
     # --- list_labels ---
     p = sub.add_parser("list_labels", help="List all user labels")
