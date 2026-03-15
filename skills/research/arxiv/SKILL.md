@@ -277,3 +277,8 @@ Papers can be withdrawn after submission. When this happens:
 - The `<summary>` field contains a withdrawal notice (look for "withdrawn" or "retracted")
 - Metadata fields may be incomplete
 - Always check the summary before treating a result as a valid paper
+
+## Cross-Skill Chaining
+
+- **Auto-use chaining**: When a paper is found, automatically use `web_extract` to fetch the abstract and key sections. Don't just list paper titles — actually retrieve the content.
+- **Propose to user**: After finding relevant papers, propose: "Would you like me to save these sources to memory for your project?" Use the clarify tool.

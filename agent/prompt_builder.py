@@ -90,6 +90,28 @@ SKILLS_GUIDANCE = (
     "skill with skill_manage so you can reuse it next time."
 )
 
+TOOL_SELECTION_GUIDE = (
+    "## Tool Usage Guide\n"
+    "READING FILES: Use read_file (not cat/terminal). Use offset/limit for large files.\n"
+    "EDITING FILES: Use patch for targeted edits (not sed/terminal). Use write_file only for new files or full rewrites.\n"
+    "SEARCHING: Use search_files for code/file search (not grep/find/terminal). Use target='files' instead of ls.\n"
+    "TERMINAL: Reserve for builds, installs, git, processes, scripts — NOT for file I/O.\n"
+    "WEB: Use web_search for information lookup. Use web_extract to read URLs. Fall back to browser tools if these fail.\n"
+    "DELEGATION: Use delegate_task for reasoning-heavy subtasks, parallel research, or tasks that would flood context.\n"
+    "CODE EXECUTION: Use execute_code when you need 3+ chained tool calls with logic between them.\n"
+    "MEMORY: Proactively save user preferences, environment facts, and lessons learned. Don't wait to be asked.\n"
+    "SESSION SEARCH: Search past conversations when user references prior work or you suspect relevant history exists.\n"
+    "VISION: Use vision_analyze for screenshots, diagrams, images — read_file cannot handle binary/image files.\n"
+    "TODO: Use for tasks with 3+ steps. Mark items completed immediately.\n"
+    "SKILLS: Check available skills before starting complex tasks — use skill_view(\"school\") for a student-focused index.\n\n"
+    "Common mistakes to avoid:\n"
+    "- Using terminal for cat/grep/sed/find when dedicated tools exist\n"
+    "- Writing full files when a patch would suffice\n"
+    "- Not using execute_code when chaining 3+ tool calls\n"
+    "- Not searching session history when user references past work\n"
+    "- Not saving useful discoveries to memory"
+)
+
 PLATFORM_HINTS = {
     "whatsapp": (
         "You are on a text messaging communication platform, WhatsApp. "
@@ -233,6 +255,9 @@ def _skill_should_show(
     return True
 
 
+_skills_cache: dict = {"mtime": 0.0, "result": "", "tools": None, "toolsets": None}
+
+
 def build_skills_system_prompt(
     available_tools: "set[str] | None" = None,
     available_toolsets: "set[str] | None" = None,
@@ -243,12 +268,31 @@ def build_skills_system_prompt(
     Includes per-skill descriptions from frontmatter so the model can
     match skills by meaning, not just name.
     Filters out skills incompatible with the current OS platform.
+
+    Results are cached and invalidated when any SKILL.md file is modified.
     """
     hermes_home = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes"))
     skills_dir = hermes_home / "skills"
 
     if not skills_dir.exists():
         return ""
+
+    # Check if any SKILL.md changed since last build
+    try:
+        current_mtime = max(
+            (f.stat().st_mtime for f in skills_dir.rglob("SKILL.md")),
+            default=0.0,
+        )
+    except OSError:
+        current_mtime = 0.0
+
+    if (
+        current_mtime == _skills_cache["mtime"]
+        and available_tools == _skills_cache["tools"]
+        and available_toolsets == _skills_cache["toolsets"]
+        and _skills_cache["result"]
+    ):
+        return _skills_cache["result"]
 
     # Collect skills with descriptions, grouped by category.
     # Each entry: (skill_name, description)
@@ -314,7 +358,7 @@ def build_skills_system_prompt(
             else:
                 index_lines.append(f"    - {name}")
 
-    return (
+    result = (
         "## Skills (mandatory)\n"
         "Before replying, scan the skills below. If one clearly matches your task, "
         "load it with skill_view(name) and follow its instructions. "
@@ -326,6 +370,13 @@ def build_skills_system_prompt(
         "\n"
         "If none match, proceed normally without loading a skill."
     )
+
+    # Cache for subsequent calls within the same session
+    _skills_cache.update(
+        mtime=current_mtime, result=result,
+        tools=available_tools, toolsets=available_toolsets,
+    )
+    return result
 
 
 # =========================================================================

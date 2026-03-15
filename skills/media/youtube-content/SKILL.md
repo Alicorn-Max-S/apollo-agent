@@ -63,6 +63,14 @@ After fetching the transcript, format it based on what the user asks for:
 2. If the transcript is very long (>50K chars), summarize in chunks
 3. Transform into the requested output format using your own reasoning
 
+## Post-Transcript Proposal
+
+After extracting a YouTube transcript, propose: "Would you like me to create study notes from this video?" Use the `clarify` tool:
+```
+clarify("I've extracted the transcript. Would you like me to create study notes from this video?",
+        ["Yes, create study notes", "Yes, create a summary", "No thanks"])
+```
+
 ## Error handling
 
 - **Transcript disabled**: Some videos have transcripts turned off — tell the user

@@ -28,19 +28,19 @@ Returns JSON with `category`, `extension`, `mime_type`, `size_bytes`, `size_huma
 
 Based on the `category` from Step 1, load and follow the appropriate skill:
 
-| Category | Skill to Load | Description |
-|----------|--------------|-------------|
-| `image` | `image-analysis` | Vision AI analysis with model fallback |
-| `document` | `document-analysis` | PDF, Word, Excel, PowerPoint extraction |
-| `code` | `code-analysis` | Source code reading and analysis |
-| `text` | `text-analysis` | Text, CSV, JSON, XML, YAML, config files |
-| `audio` | `audio-analysis` | Audio transcription and metadata |
-| `video` | `video-analysis` | Video keyframe extraction and analysis |
-| `data` | `text-analysis` | Data files (Parquet, SQLite) — treat as structured text |
-| `archive` | (inline) | List archive contents via `terminal` |
-| `unknown` | (inline) | Try `read_file`, report metadata |
+| Category | Skill to Load | How to Load | Description |
+|----------|--------------|-------------|-------------|
+| `image` | `image-analysis` | `skill_view("image-analysis")` | Vision AI analysis with model fallback |
+| `document` | `document-analysis` | `skill_view("document-analysis")` | PDF, Word, Excel, PowerPoint extraction |
+| `code` | `code-analysis` | `skill_view("code-analysis")` | Source code reading and analysis |
+| `text` | `text-analysis` | `skill_view("text-analysis")` | Text, CSV, JSON, XML, YAML, config files |
+| `audio` | `audio-analysis` | `skill_view("audio-analysis")` | Audio transcription and metadata |
+| `video` | `video-analysis` | `skill_view("video-analysis")` | Video keyframe extraction and analysis |
+| `data` | `text-analysis` | `skill_view("text-analysis")` | Data files (Parquet, SQLite) — treat as structured text |
+| `archive` | (inline) | — | List archive contents via `terminal` |
+| `unknown` | (inline) | — | Try `read_file`, report metadata |
 
-**To load a skill:**
+**To load a skill**, always use an explicit `skill_view` call:
 ```
 skill_view("SKILL_NAME")
 ```

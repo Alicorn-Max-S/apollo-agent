@@ -32,6 +32,10 @@ TODOIST_API_TOKEN=your_token_here
 
 **Optional — Google Calendar:** If the `google-workspace` skill is set up, scheduling will also check Google Calendar events to avoid double-booking. This is strongly recommended but not required.
 
+## Step 0: Verify Setup
+
+Before proceeding, verify that TODOIST_API_TOKEN is set. Use terminal to run: `echo $TODOIST_API_TOKEN | head -c5`. If empty, inform the user they need to get their API token from https://todoist.com/app/settings/integrations/developer
+
 ## Usage
 
 ```bash

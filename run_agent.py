@@ -81,6 +81,7 @@ from hermes_constants import OPENROUTER_BASE_URL, OPENROUTER_MODELS_URL
 from agent.prompt_builder import (
     DEFAULT_AGENT_IDENTITY, PLATFORM_HINTS,
     MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE,
+    TOOL_SELECTION_GUIDE,
 )
 from agent.model_metadata import (
     fetch_model_metadata, get_model_context_length,
@@ -1790,6 +1791,11 @@ class AIAgent:
             tool_guidance.append(SKILLS_GUIDANCE)
         if tool_guidance:
             prompt_parts.append(" ".join(tool_guidance))
+
+        # Consolidated tool selection guide — only inject when enough tools
+        # are loaded to make it worthwhile (avoids bloat for minimal toolsets).
+        if len(self.valid_tool_names) > 3:
+            prompt_parts.append(TOOL_SELECTION_GUIDE)
 
         # Honcho CLI awareness: tell Hermes about its own management commands
         # so it can refer the user to them rather than reinventing answers.
@@ -3524,6 +3530,25 @@ class AIAgent:
 
             parsed_calls.append((tool_call, function_name, function_args))
 
+        # ── File conflict detection ──────────────────────────────────────
+        # If multiple write_file/patch calls target the same file, fall back
+        # to sequential execution to avoid data races.
+        _WRITE_TOOLS = frozenset({"write_file", "patch"})
+        _targeted_paths: dict[str, int] = {}
+        _has_conflict = False
+        for i, (tc, fn, args) in enumerate(parsed_calls):
+            if fn in _WRITE_TOOLS:
+                path = args.get("path", "")
+                if path in _targeted_paths:
+                    _has_conflict = True
+                    break
+                _targeted_paths[path] = i
+        if _has_conflict:
+            logger.info("File conflict detected in concurrent calls, falling back to sequential")
+            return self._execute_tool_calls_sequential(
+                assistant_message, messages, effective_task_id, api_call_count
+            )
+
         # ── Logging / callbacks ──────────────────────────────────────────
         tool_names_str = ", ".join(name for _, name, _ in parsed_calls)
         if not self.quiet_mode:
@@ -3554,7 +3579,15 @@ class AIAgent:
                 result = f"Error executing tool '{function_name}': {tool_error}"
                 logger.error("_invoke_tool raised for %s: %s", function_name, tool_error, exc_info=True)
             duration = time.time() - start
-            is_error, _ = _detect_tool_failure(function_name, result)
+            is_error, error_suffix = _detect_tool_failure(function_name, result)
+            # Append recovery hint so the model can self-correct
+            if is_error and error_suffix and error_suffix != " [error]":
+                try:
+                    parsed = json.loads(result)
+                    parsed["_recovery_hint"] = error_suffix.strip(" []")
+                    result = json.dumps(parsed, ensure_ascii=False)
+                except (json.JSONDecodeError, TypeError):
+                    result += f"\n\n[Hint: {error_suffix.strip(' []')}]"
             results[index] = (function_name, function_args, result, duration, is_error)
 
         # Start spinner for CLI mode
@@ -3843,9 +3876,17 @@ class AIAgent:
 
             # Log tool errors to the persistent error log so [error] tags
             # in the UI always have a corresponding detailed entry on disk.
-            _is_error_result, _ = _detect_tool_failure(function_name, function_result)
+            _is_error_result, _error_suffix = _detect_tool_failure(function_name, function_result)
             if _is_error_result:
                 logger.warning("Tool %s returned error (%.2fs): %s", function_name, tool_duration, result_preview)
+                # Append recovery hint so the model can self-correct
+                if _error_suffix and _error_suffix != " [error]":
+                    try:
+                        _parsed = json.loads(function_result)
+                        _parsed["_recovery_hint"] = _error_suffix.strip(" []")
+                        function_result = json.dumps(_parsed, ensure_ascii=False)
+                    except (json.JSONDecodeError, TypeError):
+                        function_result += f"\n\n[Hint: {_error_suffix.strip(' []')}]"
 
             if self.verbose_logging:
                 logging.debug(f"Tool {function_name} completed in {tool_duration:.2f}s")
@@ -3927,12 +3968,15 @@ class AIAgent:
             return (
                 f"[BUDGET WARNING: Iteration {api_call_count}/{self.max_iterations}. "
                 f"Only {remaining} iteration(s) left. "
-                "Provide your final response NOW. No more tool calls unless absolutely critical.]"
+                "Provide your final response NOW. If you have pending work, summarize what's done "
+                "and what remains. Do NOT start new tool call sequences.]"
             )
         if progress >= self._budget_caution_threshold:
             return (
                 f"[BUDGET: Iteration {api_call_count}/{self.max_iterations}. "
-                f"{remaining} iterations left. Start consolidating your work.]"
+                f"{remaining} iterations left. Wrap up current work. "
+                "Use execute_code to batch remaining tool calls if possible. "
+                "Avoid exploratory searches — focus on delivering results.]"
             )
         return None
 

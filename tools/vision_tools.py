@@ -461,7 +461,7 @@ from tools.registry import registry
 
 VISION_ANALYZE_SCHEMA = {
     "name": "vision_analyze",
-    "description": "Analyze images using AI vision. Provides a comprehensive description and answers a specific question about the image content.",
+    "description": "Analyze images using AI vision. Use this for screenshots, diagrams, photos, charts, or any visual content. read_file CANNOT handle images — always use this tool instead. Provides a comprehensive description and answers a specific question about the image content.",
     "parameters": {
         "type": "object",
         "properties": {

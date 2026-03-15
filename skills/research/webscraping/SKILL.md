@@ -473,3 +473,7 @@ def load_scrape(url: str, output_dir: str = "./scraped", max_age_hours: int = 24
 - **Don't ignore encoding.** Use `resp.encoding = resp.apparent_encoding` with requests if you see garbled text.
 - **Don't parse HTML with regex for complex extraction.** Use BeautifulSoup — regex on HTML is fragile and error-prone.
 - **Don't guess if a page needs Firecrawl.** Run the `needs_firecrawl()` detection check (see above) after Tier 2 fails — don't assume based on the URL alone.
+
+## Cross-Skill Chaining
+
+- **Auto-use chaining**: When extracted content contains follow-up links relevant to the user's query, automatically fetch up to 3 additional links with `web_extract(urls=[...])` or the scraping tools described above.

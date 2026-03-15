@@ -100,6 +100,11 @@ When vision analysis succeeds, present:
 2. Answer to the user's specific question (if any)
 3. Relevant metadata (dimensions, format) if useful
 
+## Auto-Use Chaining
+
+- When OCR detects text in an image, automatically extract and present it to the user. Do not wait for a follow-up request — include the extracted text in your response.
+- When the image is a chart or graph, describe the data trends and key data points. Identify axes, labels, legends, and notable values (peaks, troughs, intersections).
+
 ## Notes
 
 - All conversion is done locally with Pillow — FREE, no API calls

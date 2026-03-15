@@ -34,6 +34,10 @@ CANVAS_BASE_URL=https://yourschool.instructure.com
 
 The base URL is whatever appears in your browser when you're logged into Canvas (no trailing slash).
 
+## Step 0: Verify Setup
+
+Before proceeding, verify that CANVAS_API_TOKEN and CANVAS_BASE_URL environment variables are set. Use terminal to run: `echo $CANVAS_API_TOKEN | head -c5` and `echo $CANVAS_BASE_URL`. If either is empty, inform the user they need to configure Canvas API access first.
+
 ## Usage
 
 ```bash
@@ -81,6 +85,16 @@ $CANVAS list_pending 12345
 # List completed assignments
 $CANVAS list_done 12345
 ```
+
+## Cross-Skill Chaining
+
+### Document Analysis for Attachments
+
+After fetching assignment details (via `get_assignment`), if the assignment includes PDF, DOCX, or other document attachments, automatically download them and use `skill_view("document-analysis")` to analyze the file contents.
+
+### Propose Todoist Scheduling
+
+After displaying assignments with due dates (via `list_assignments` or `list_pending`), propose to the user: "Would you like me to schedule these deadlines in Todoist?" Use the clarify tool to offer this. If the user accepts, use the todoist skill to create tasks with the appropriate due dates, durations, and labels.
 
 ## Output Format
 

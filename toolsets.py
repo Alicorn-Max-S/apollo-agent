@@ -203,6 +203,37 @@ TOOLSETS = {
     },
 
 
+    # School-focused toolset — reduced surface for high school students
+    "hermes-school": {
+        "description": "School-focused toolset for homework, research, coding, and learning",
+        "tools": [
+            # Web research
+            "web_search", "web_extract",
+            # Terminal + process management
+            "terminal", "process",
+            # File manipulation
+            "read_file", "write_file", "patch", "search_files",
+            # Vision (screenshots, diagrams, charts)
+            "vision_analyze",
+            # Skills (student skill index)
+            "skills_list", "skill_view", "skill_manage",
+            # Browser automation (Canvas, Google Classroom, research sites)
+            "browser_navigate", "browser_snapshot", "browser_click",
+            "browser_type", "browser_scroll", "browser_back",
+            "browser_press", "browser_close", "browser_get_images",
+            "browser_vision",
+            # Planning & memory
+            "todo", "memory",
+            # Session history
+            "session_search",
+            # Clarifying questions
+            "clarify",
+            # Code execution + delegation
+            "execute_code", "delegate_task",
+        ],
+        "includes": []
+    },
+
     # Scenario-specific toolsets
     
     "debugging": {

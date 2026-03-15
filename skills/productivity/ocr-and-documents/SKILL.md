@@ -13,7 +13,7 @@ metadata:
 # PDF & Document Extraction
 
 For DOCX: use `python-docx` (parses actual document structure, far better than OCR).
-For PPTX: see the `powerpoint` skill (uses `python-pptx` with full slide/notes support).
+For PPTX: see the `powerpoint` skill (uses `python-pptx` with full slide/notes support). Load it with `skill_view("powerpoint")`.
 This skill covers **PDFs and scanned documents**.
 
 ## Step 1: Remote URL Available?
@@ -122,6 +122,14 @@ web_extract(urls=["https://arxiv.org/pdf/2402.03300"])
 web_search(query="arxiv GRPO reinforcement learning 2026")
 ```
 
+## Post-OCR Proposal
+
+When OCR output contains structured data (tables, lists), propose: "Would you like me to export this to a spreadsheet or structured format?" Use the `clarify` tool:
+```
+clarify("The extracted text contains structured data. Would you like me to export it?",
+        ["Export to CSV", "Export to XLSX", "Export to JSON", "No thanks"])
+```
+
 ## Notes
 
 - `web_extract` is always first choice for URLs
@@ -130,4 +138,4 @@ web_search(query="arxiv GRPO reinforcement learning 2026")
 - Both helper scripts accept `--help` for full usage
 - marker-pdf downloads ~2.5GB of models to `~/.cache/huggingface/` on first use
 - For Word docs: `pip install python-docx` (better than OCR — parses actual structure)
-- For PowerPoint: see the `powerpoint` skill (uses python-pptx)
+- For PowerPoint: see the `powerpoint` skill (uses python-pptx). Load it with `skill_view("powerpoint")`
