@@ -18,6 +18,7 @@ A curated set of skills for high school students. Use `skill_view("<skill-name>"
 
 ## Study & Practice
 - **study** — Interactive study sessions: upload materials, get quizzed with 10 formats (conjugation, fill-in-blank, multiple choice, etc.), track progress with spaced repetition, get smart suggestions on what to study next
+- **quizlet-flashcards** — Generate high-quality flashcards formatted for Quizlet import — any subject, tab-separated, ready to paste
 
 ## Research & Web
 - **duckduckgo-search** — Search the web for information (free, no API key)
