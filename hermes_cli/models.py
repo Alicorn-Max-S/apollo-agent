@@ -336,6 +336,25 @@ def fetch_api_models(
         return None
 
 
+def detect_provider_for_model(model_id: str) -> Optional[str]:
+    """Detect which provider a model belongs to based on static catalogs.
+
+    Returns the canonical provider ID (e.g. ``"openrouter"``, ``"anthropic"``)
+    or ``None`` if the model isn't found in any known catalog.  OpenRouter is
+    checked last since its model IDs use ``provider/model`` format and may
+    overlap with bare model names in other providers.
+    """
+    # Check non-OpenRouter providers first (bare model names)
+    for pid, models in _PROVIDER_MODELS.items():
+        if model_id in models:
+            return pid
+    # Check OpenRouter (provider/model format)
+    openrouter_ids = {mid for mid, _ in OPENROUTER_MODELS}
+    if model_id in openrouter_ids:
+        return "openrouter"
+    return None
+
+
 def validate_requested_model(
     model_name: str,
     provider: Optional[str],
