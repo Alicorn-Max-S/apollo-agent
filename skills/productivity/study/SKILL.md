@@ -32,6 +32,11 @@ $STUDY create_class "Spanish 3"
 # Categories (within a class, e.g., "pretérito", "imperfecto", "Civil War")
 $STUDY list_categories --class "Spanish 3"
 $STUDY create_category --class "Spanish 3" --name "pretérito"
+$STUDY get_category --class "Spanish 3" --category "pretérito"
+
+# Grading mode per category (accent/spelling leniency — see Grading Modes section)
+# Modes: "strict" (wrong = 0.0), "partial" (wrong = 0.5), "lenient" (wrong = 1.0, still tracked)
+$STUDY set_grading_mode --class "Spanish 3" --category "pretérito" --accent-mode partial --spelling-mode strict
 
 # Study files
 $STUDY save_file --class "Spanish 3" --category "pretérito" --filename "verbs.pdf" --content - --content-type "verb_list"
@@ -41,14 +46,15 @@ $STUDY delete_file FILE_ID
 $STUDY update_last_studied FILE_ID
 
 # Record a question result (auto-updates scores and type counts)
-# --accuracy: 0.0 (completely wrong) to 1.0 (perfect). Use fractional values for partial credit.
-# --accent-correct: 0 or 1 (omit if accents are not relevant to the question)
+# --accuracy: 0.0 (wrong) or 1.0 (correct). Only use fractional values for multi-part question types.
+# --accent-correct / --spelling-correct: 0 or 1 (omit if not applicable)
 $STUDY record --class "Spanish 3" --category "pretérito" \
   --question "conjugate hablar (yo, pretérito)" \
   --correct-answer "hablé" --user-answer "hable" \
-  --accuracy 0.9 --accent-correct 0 --type "conjugation"
+  --accuracy 1.0 --accent-correct 0 --type "conjugation"
 
-# Semantic search (find similar past questions to AVOID REPETITION — not for accuracy checking)
+# Check if a question has already been asked (before asking it!)
+# Uses embedding similarity or FTS5 fallback — NOT used for grading
 $STUDY search_similar --class "Spanish 3" --category "pretérito" \
   --query "conjugate hablar yo pretérito" --limit 5
 
@@ -246,21 +252,21 @@ Then apply this logic:
 ### One Question at a Time
 
 1. **Generate a question** from the study material using the chosen question type
-2. **Before asking**, check for similarity to past questions:
+2. **Before asking**, verify this question hasn't already been asked:
    ```bash
    $STUDY search_similar --class "CLASS" --category "CAT" --query "your candidate question" --limit 3
    ```
-   If any result has similarity > 0.85, generate a different question to avoid repetition.
+   If any result has similarity > 0.85, that question (or one very similar) has already been asked — generate a different question instead.
 3. **Ask the question** and wait for the user's answer
-4. **Check accuracy** using the Answer Checking Rules below
-5. **Give immediate feedback**: explain why correct or incorrect, provide the correct answer if wrong
-6. **Handle accent issues** (if applicable): See the Accent Handling section below
-7. **Record the result** with granular accuracy:
+4. **Check accuracy** using the Answer Checking Rules and Grading Rules below
+5. **Handle accent/spelling issues** (if applicable): Check the category's `accent_mode` and `spelling_mode`. If not set and an error is detected, ask the user to choose a mode (see Grading Modes). Apply the mode for all remaining questions in this session.
+6. **Give immediate feedback**: explain why correct or incorrect, provide the correct answer if wrong
+7. **Record the result**:
    ```bash
    $STUDY record --class "CLASS" --category "CAT" \
      --question "the question" --correct-answer "correct" \
-     --user-answer "what user said" --accuracy 0.85 --type "conjugation" \
-     [--accent-correct 0]
+     --user-answer "what user said" --accuracy 1.0 --type "conjugation" \
+     [--accent-correct 0] [--spelling-correct 1]
    ```
 
 ### Spaced Repetition (Every Other Question)
@@ -289,78 +295,107 @@ Once there are **≥10 question records** for the current class:
 
 ---
 
-## Accuracy Scoring (Granular, Not Binary)
+## Grading Rules
 
-**Accuracy is a float from 0.0 to 1.0**, NOT a binary correct/incorrect. This allows partial credit for answers that are close but not perfect.
+### Default: Strict Binary Grading
 
-### Accuracy Scale
+**Most question types are graded strictly: 1.0 (correct) or 0.0 (incorrect).** Only multi-part types use fractional accuracy.
 
-| Accuracy | Meaning | When to Use |
-|----------|---------|-------------|
-| **1.0** | Perfect | Answer is completely correct in every way |
-| **0.9** | Near-perfect | Right concept, minor issue (e.g., missing accent, slight spelling) |
-| **0.7–0.8** | Mostly correct | Key concept present but missing one part (e.g., short answer with 3/4 key points) |
-| **0.5** | Half correct | Got the general idea but significant gaps or errors |
-| **0.3–0.4** | Partially correct | Some relevant knowledge shown but mostly wrong |
-| **0.0** | Completely wrong | Wrong answer, wrong concept, or no attempt |
+| Type | Grading | Rule |
+|------|---------|------|
+| `fill_in_blank` | **Binary** | 1.0 = correct, 0.0 = wrong. No partial credit. |
+| `conjugation` | **Binary** | 1.0 = correct form, 0.0 = wrong form/tense. Accents graded per accent_mode. |
+| `vocabulary` | **Binary** | 1.0 = correct (synonyms accepted), 0.0 = wrong. |
+| `multiple_choice` | **Binary** | 1.0 = correct, 0.0 = wrong. |
+| `true_false` | **Binary** | 1.0 = correct, 0.0 = wrong. |
+| `full_sentence` | **Fractional** | accuracy = key_concepts_present / total_key_concepts |
+| `short_answer` | **Fractional** | accuracy = key_points_present / total_key_points |
+| `matching` | **Fractional** | accuracy = correct_pairs / total_pairs |
+| `ordering` | **Fractional** | accuracy = items_in_correct_position / total_items |
+| `diagram_label` | **Fractional** | accuracy = correct_labels / total_labels |
 
-### Accuracy by Question Type
+**For fractional types**, always tell the user their score breakdown: "You got 3/4 key points — you missed [X]."
 
-| Type | How to Calculate Accuracy |
-|------|--------------------------|
-| `conjugation` | 1.0 = correct form & accents. 0.9 = correct form, wrong accent. 0.0 = wrong form/tense |
-| `vocabulary` | 1.0 = exact/synonym match. 0.7 = close synonym or partially correct. 0.0 = wrong |
-| `fill_in_blank` | 1.0 = correct term. 0.9 = correct concept, minor error. 0.0 = wrong term |
-| `full_sentence` | Count key concepts: accuracy = concepts_present / total_concepts (e.g., 3/4 = 0.75) |
-| `short_answer` | Count key points: accuracy = points_present / total_points (e.g., 2/3 = 0.67) |
-| `multiple_choice` | 1.0 = correct choice. 0.0 = wrong choice (no partial credit) |
-| `true_false` | 1.0 = correct T/F + good reasoning. 0.7 = correct T/F, weak reasoning. 0.0 = wrong T/F |
-| `matching` | accuracy = correct_pairs / total_pairs (e.g., 4/5 = 0.8) |
-| `ordering` | accuracy = items_in_correct_position / total_items (e.g., 3/4 = 0.75) |
-| `diagram_label` | accuracy = correct_labels / total_labels (e.g., 5/6 = 0.83) |
+### Accent & Spelling Exceptions
+
+Accent and spelling errors on binary types are handled separately via grading modes (see below). These can turn a binary 0.0 into a 0.5 or 1.0 depending on the user's preference for that category.
 
 ---
 
-## Accent Handling
+## Grading Modes (Accent & Spelling)
 
-When a question involves accented characters (common in Spanish, French, Portuguese, etc.), track accent correctness separately.
+Each category has two independent grading modes that control how accent errors and spelling errors affect the accuracy score. These are **per-category settings that persist across sessions**.
 
-### Step 1: Detect Accent Issues
+### The Three Modes
 
-Compare the user's answer to the correct answer specifically for accent marks. Examples:
-- "hable" vs "hablé" → accent missing
-- "habló" vs "hablé" → wrong accent (different conjugation — this is a **content error**, not an accent issue)
-- "cafe" vs "café" → accent missing
+| Mode | Accent/Spelling Wrong → Accuracy Effect | Description |
+|------|----------------------------------------|-------------|
+| **`strict`** | 0.0 (wrong) | Error counts as a fully incorrect answer |
+| **`partial`** | 0.5 (half credit) | Error gives half credit — concept was right but form was wrong |
+| **`lenient`** | 1.0 (full credit) | Error is tracked (`accent_correct=0`) but doesn't affect the score |
 
-Only flag as an accent issue when the **base word/form is correct** but the accent is missing or wrong. If the wrong accent changes the meaning (e.g., "habló" = he spoke vs "hablé" = I spoke), that's a content error, not an accent issue.
+### First-Time Setup (Per Category)
 
-### Step 2: Notify the User
+When the user gets their **first accent or spelling error** in a category where the mode hasn't been set yet (`accent_mode` / `spelling_mode` is null):
 
-When an accent issue is detected, tell the user:
+1. Note the error and tell the user what happened:
+   > "You wrote **'hable'** but the correct answer is **'hablé'** — the concept is right but the accent is missing.
+   >
+   > How do you want accent errors handled for **pretérito** going forward?
+   > 1. **Strict** — missing accents count as wrong (0.0)
+   > 2. **Partial credit** — missing accents get half credit (0.5)
+   > 3. **Lenient** — missing accents get full credit but I'll still track them"
 
-> "Your answer is conceptually correct! However, the accent is off: you wrote **'hable'** but it should be **'hablé'**. The accent on the é marks this as pretérito.
+2. Save the user's choice:
+   ```bash
+   $STUDY set_grading_mode --class "Spanish 3" --category "pretérito" --accent-mode partial
+   ```
+
+3. **Apply the chosen mode to the current answer** and to all future answers in this category for the rest of the session (and future sessions).
+
+Do the same for spelling when the first spelling error is detected:
+> "You wrote **'concious'** but the correct spelling is **'conscious'**. The concept is right.
 >
-> How would you like this scored?
-> 1. **Full credit** (1.0) — I knew the concept
-> 2. **Partial credit** (0.9) — count it but note the accent
-> 3. **No credit** (0.0) — I need to practice accents"
+> How do you want spelling errors handled for **vocabulary** going forward?"
 
-### Step 3: Record with User's Choice
+Then: `$STUDY set_grading_mode --class "English" --category "vocabulary" --spelling-mode lenient`
 
-Use the `--accent-correct` flag and the accuracy the user chose:
+### Applying Modes During a Session
 
+**Before grading each answer**, check the category's modes:
 ```bash
-# User chose partial credit (0.9)
-$STUDY record ... --accuracy 0.9 --accent-correct 0 --type "conjugation"
-
-# User chose full credit (1.0)
-$STUDY record ... --accuracy 1.0 --accent-correct 0 --type "conjugation"
-
-# Perfect answer with correct accents
-$STUDY record ... --accuracy 1.0 --accent-correct 1 --type "conjugation"
+$STUDY get_category --class "CLASS" --category "CAT"
 ```
 
-**Important**: `--accent-correct 0` means the accent was wrong, `--accent-correct 1` means the accent was correct. Omit the flag entirely if accents are not relevant to the question (e.g., math, history).
+The response includes `accent_mode` and `spelling_mode`. Apply them:
+
+- **Accent error detected** + `accent_mode` is set → apply the mode automatically (don't ask again)
+- **Accent error detected** + `accent_mode` is null → ask the user to choose (first-time setup)
+- **Spelling error detected** + `spelling_mode` is set → apply the mode automatically
+- **Spelling error detected** + `spelling_mode` is null → ask the user to choose
+
+### What Counts as an Accent Error vs. a Content Error
+
+- **Accent error**: The base word is correct but accents are missing/misplaced. "hable" for "hablé" ✓
+- **Content error**: The wrong accent changes the actual meaning/form. "habló" (he spoke) for "hablé" (I spoke) is NOT an accent error — it's a wrong conjugation. Grade as 0.0.
+- **Spelling error**: A typo or misspelling where the intended word is clear. "concious" for "conscious" ✓
+- **Content error**: A completely different word. "conscious" for "conscience" is NOT a spelling error — it's a wrong answer.
+
+### Recording with Modes
+
+```bash
+# Content correct, accent wrong, category accent_mode is "partial" → accuracy = 0.5
+$STUDY record ... --accuracy 0.5 --accent-correct 0 --type "conjugation"
+
+# Content correct, accent wrong, category accent_mode is "lenient" → accuracy = 1.0
+$STUDY record ... --accuracy 1.0 --accent-correct 0 --type "conjugation"
+
+# Content correct, spelling wrong, category spelling_mode is "strict" → accuracy = 0.0
+$STUDY record ... --accuracy 0.0 --spelling-correct 0 --type "vocabulary"
+
+# Everything correct
+$STUDY record ... --accuracy 1.0 --accent-correct 1 --spelling-correct 1 --type "conjugation"
+```
 
 ---
 
@@ -368,61 +403,62 @@ $STUDY record ... --accuracy 1.0 --accent-correct 1 --type "conjugation"
 
 **CRITICAL: Evaluate answers semantically, NOT with exact string matching.** The goal is to assess whether the student knows the concept, not whether they typed it identically.
 
-**IMPORTANT: Embeddings (`search_similar`) are ONLY used to avoid repeating questions. They are NOT used for accuracy checking.** You (the agent) evaluate accuracy yourself by comparing the user's answer to the correct answer using the rules below.
+**IMPORTANT: `search_similar` is ONLY used to check if a question has already been asked before you ask it. It is NOT used for grading answers.** You (the agent) evaluate accuracy yourself by comparing the user's answer to the correct answer using the rules below.
 
 ### Conjugation
 - Accept with or without subject pronoun: "yo hablé" = "hablé" ✓
 - Case-insensitive: "Hablé" = "hablé" ✓
-- **Accent issues**: see Accent Handling above — let the user choose credit level
+- Accent errors: apply the category's `accent_mode` (see Grading Modes)
 - Wrong tense or form → accuracy 0.0, explain the rule and give correct conjugation
 
 ### Vocabulary / One-Word
 - Case-insensitive
 - Accept common synonyms → accuracy 1.0
-- Accept singular/plural variations → accuracy 0.9 with a note
 - For translations, accept common alternative translations
-- Partially related answer → accuracy 0.3–0.5
+- Wrong word → accuracy 0.0
+- Spelling errors: apply the category's `spelling_mode`
 
 ### Fill in the Blank
 - Only evaluate the **blank portion**, ignore surrounding text
-- Apply same leniency as vocabulary
-- Case-insensitive for non-proper nouns
+- Correct term → 1.0, wrong term → 0.0
+- Accent/spelling errors: apply the category's modes
+- **No partial credit** (unless it's an accent/spelling issue handled by grading modes)
 
 ### Math
 - Evaluate mathematical equivalence: 1/2 = 0.5 = 50%
 - Accept equivalent expression forms
-- For multi-step problems: accuracy = correct_steps / total_steps
+- Correct → 1.0, wrong → 0.0
 
-### Full Sentence / Short Answer
+### Full Sentence / Short Answer (FRACTIONAL)
 - Identify the **key concepts/facts** required in the answer (e.g., 4 key points)
 - accuracy = concepts_present / total_concepts
 - Don't penalize grammar or style differences
 - Accept different valid explanations of the same concept
-- Tell the user which points they hit and which they missed
+- Tell the user which points they hit and which they missed: "3/4 key points — you missed [X]"
 
 ### True/False
-- Wrong T/F choice → accuracy 0.0
-- Correct T/F + good reasoning → accuracy 1.0
-- Correct T/F + weak/missing reasoning → accuracy 0.7
+- Correct → 1.0, wrong → 0.0
+- No partial credit for reasoning quality
 
 ### Multiple Choice
-- Correct → accuracy 1.0, wrong → accuracy 0.0
+- Correct → 1.0, wrong → 0.0
 
-### Matching / Ordering
-- Evaluate each pair/position individually
-- accuracy = correct_items / total_items
+### Matching (FRACTIONAL)
+- accuracy = correct_pairs / total_pairs
 - Note which specific items were wrong
 
-### Diagram Label
-- Evaluate each label independently
-- Accept common alternative names
+### Ordering (FRACTIONAL)
+- accuracy = items_in_correct_position / total_items
+
+### Diagram Label (FRACTIONAL)
 - accuracy = correct_labels / total_labels
+- Accept common alternative names
 
 ### Always
 - **Explain WHY** the answer is correct or incorrect
 - For incorrect or partial answers: provide the correct answer + a brief rule or explanation
-- For accent issues: follow the Accent Handling workflow (let user choose credit level)
-- Show the accuracy you assigned: "Accuracy: **0.75** (3/4 key points)"
+- For accent/spelling issues: apply the category's grading mode (or ask to set it if not yet configured)
+- For fractional types, show the breakdown: "Accuracy: **0.75** (3/4 key points)"
 
 ---
 
