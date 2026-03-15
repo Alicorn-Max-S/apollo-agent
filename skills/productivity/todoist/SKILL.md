@@ -70,6 +70,9 @@ $TODOIST delete_task 1234567890
 # List all projects
 $TODOIST list_projects
 
+# Create a project (for grouping related tasks)
+$TODOIST create_project --name "Essay — Climate Change"
+
 # List all labels (useful for label suggestions)
 $TODOIST list_labels
 
@@ -152,13 +155,22 @@ For any field NOT explicitly provided by the user, estimate it:
 - Quick tasks (reply to email, review a doc, make a call, quick errand): **15 min**
 - Medium tasks (write a short report, attend a meeting, short assignment, workout): **30–60 min**
 - Complex tasks (coding project, research, essay writing, studying a chapter): **90–120 min**
-- Deep work (major project milestone, exam prep, thesis writing, full study session): **120–240 min**
+- Deep work (major project milestone, exam prep, thesis writing, full study session): **120 min** (but see "Breaking Up Large Tasks" below)
 
 **IMPORTANT:** A task can only have a duration if it also has a specific start time (`--due-datetime`). Do NOT set `--duration` on tasks that only have a date (`--due-date`) or natural language due (`--due-string` without a time). If the user provides a duration but no start time, you must also find and assign a start time (see Step 4) before creating the task.
 
 Before estimating, check your memory for past duration corrections. Search for entries containing "duration accuracy" — these record how long similar tasks actually took in the past. Adjust your estimate based on this user-specific data.
 
-**Breaking Up Large Tasks** — If a task would take more than **240 minutes** (4 hours), break it into smaller subtasks instead of creating one giant task. For example, "Write research paper" should become separate tasks like "Write introduction", "Write methodology section", "Write results & analysis", etc. Each subtask should have its own duration, priority, and scheduling. Present the breakdown to the user for confirmation before creating.
+**Breaking Up Large Tasks** — If a task would take more than **120 minutes** (2 hours), break it into smaller tasks organized under a **dedicated project** instead of creating one giant task. For example, "Write essay on climate change" should become:
+
+1. Create a project: "Essay — Climate Change"
+2. Create individual tasks inside that project:
+   - "Identify key quotes and sources" (60 min)
+   - "Write general structure / outline" (30 min)
+   - "Write rough draft" (90 min)
+   - "Revise and write final draft" (90 min)
+
+Each task gets its own duration, priority, labels, and scheduled time slot. Present the full breakdown to the user for confirmation before creating anything. The project groups everything together so the user can track overall progress.
 
 **Priority** — Infer from urgency and importance cues:
 - 1 (normal): Routine tasks, no deadline pressure
@@ -261,7 +273,7 @@ Use the memory tool: add "Label preference: user prefers '[correct_label]' for [
 
 - `list_tasks`, `get_task`, `list_projects`, `list_labels`, `get_scheduled` are **read-only**
 - `create_task` **MUST** always include `--duration` — estimate if the user doesn't provide one. However, `--duration` requires `--due-datetime` (a specific start time) — never set duration without a start time
-- Tasks estimated at more than **240 minutes** should be broken into smaller subtasks
+- Tasks estimated at more than **120 minutes** should be broken into smaller tasks under a dedicated project
 - `delete_task` **MUST** be confirmed with the user before execution
 - If you estimated any of duration/priority/labels/deadline, you **MUST** confirm with the user before creating
 - On first use, verify auth by running `$TODOIST list_projects` — if it fails with 401/403, guide the user through setup

@@ -366,6 +366,51 @@ class TestListProjects(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# create_project
+# ---------------------------------------------------------------------------
+class TestCreateProject(unittest.TestCase):
+    @patch.object(todoist_api, "TODOIST_API_TOKEN", "tok")
+    @patch("todoist_api.requests")
+    def test_create_project_basic(self, mock_requests):
+        project_resp = {
+            "id": "300", "name": "Essay — Climate Change", "color": "charcoal",
+            "is_inbox_project": False, "is_favorite": False, "order": 3,
+        }
+        mock_requests.post.return_value = _mock_response(project_resp)
+        mock_requests.HTTPError = Exception
+
+        args = _make_args(name="Essay — Climate Change", color=None, parent_id=None, is_favorite=False)
+        buf = io.StringIO()
+        with patch("sys.stdout", buf):
+            todoist_api.create_project(args)
+        output = json.loads(buf.getvalue())
+        self.assertEqual(output["name"], "Essay — Climate Change")
+        self.assertEqual(output["id"], "300")
+        # Verify the POST body
+        body = mock_requests.post.call_args.kwargs["json"]
+        self.assertEqual(body["name"], "Essay — Climate Change")
+
+    @patch.object(todoist_api, "TODOIST_API_TOKEN", "tok")
+    @patch("todoist_api.requests")
+    def test_create_project_with_color_and_parent(self, mock_requests):
+        project_resp = {
+            "id": "301", "name": "Sub-project", "color": "blue",
+            "is_inbox_project": False, "is_favorite": True, "order": 4,
+        }
+        mock_requests.post.return_value = _mock_response(project_resp)
+        mock_requests.HTTPError = Exception
+
+        args = _make_args(name="Sub-project", color="blue", parent_id="300", is_favorite=True)
+        buf = io.StringIO()
+        with patch("sys.stdout", buf):
+            todoist_api.create_project(args)
+        body = mock_requests.post.call_args.kwargs["json"]
+        self.assertEqual(body["color"], "blue")
+        self.assertEqual(body["parent_id"], "300")
+        self.assertTrue(body["is_favorite"])
+
+
+# ---------------------------------------------------------------------------
 # list_labels
 # ---------------------------------------------------------------------------
 class TestListLabels(unittest.TestCase):
