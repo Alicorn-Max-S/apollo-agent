@@ -13,7 +13,7 @@ metadata:
 # PDF & Document Extraction
 
 For DOCX: use `python-docx` (parses actual document structure, far better than OCR).
-For PPTX: see the `powerpoint` skill (uses `python-pptx` with full slide/notes support).
+For PPTX: see the `powerpoint` skill (uses `python-pptx` with full slide/notes support). Load it with `skill_view("powerpoint")`.
 This skill covers **PDFs and scanned documents**.
 
 ## Step 1: Remote URL Available?

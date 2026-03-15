@@ -13,33 +13,33 @@ Note: Vault paths may contain spaces - always quote them.
 
 ## Read a note
 
-```bash
+```
 VAULT="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
-cat "$VAULT/Note Name.md"
+read_file(path="$VAULT/Note Name.md")
 ```
 
 ## List notes
 
-```bash
+```
 VAULT="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
 
 # All notes
-find "$VAULT" -name "*.md" -type f
+search_files(pattern="*.md", target="files", path="$VAULT")
 
 # In a specific folder
-ls "$VAULT/Subfolder/"
+search_files(pattern="*.md", target="files", path="$VAULT/Subfolder")
 ```
 
 ## Search
 
-```bash
+```
 VAULT="${OBSIDIAN_VAULT_PATH:-$HOME/Documents/Obsidian Vault}"
 
 # By filename
-find "$VAULT" -name "*.md" -iname "*keyword*"
+search_files(pattern="*keyword*.md", target="files", path="$VAULT")
 
 # By content
-grep -rli "keyword" "$VAULT" --include="*.md"
+search_files(pattern="keyword", target="content", path="$VAULT")
 ```
 
 ## Create a note

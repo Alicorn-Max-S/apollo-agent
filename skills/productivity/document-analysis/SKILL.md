@@ -237,9 +237,22 @@ memory(action="add", target="memory", content="file-analysis-vision-model-succes
 
 ---
 
+## Auto-Use Chaining
+
+- When the document contains images or charts, automatically use `vision_analyze` on them to describe their content. When the document contains URLs, use `web_extract` to fetch them.
+- To load the OCR and documents skill for cross-referencing, use `skill_view("ocr-and-documents")` explicitly rather than just referencing it by name.
+
+## Post-Analysis Proposal
+
+After analyzing a long document, propose: "Would you like me to create a summary in your notes (Obsidian/Notion)?" Use the `clarify` tool:
+```
+clarify("I've finished analyzing this document. Would you like me to create a summary in your notes?",
+        ["Save summary to Obsidian", "Save summary to Notion", "No thanks"])
+```
+
 ## Notes
 
 - All extraction tools are FREE and run locally — no API calls except for vision fallback
-- pymupdf scripts are reused from the existing `ocr-and-documents` skill
+- pymupdf scripts are reused from the existing `ocr-and-documents` skill — load it with `skill_view("ocr-and-documents")`
 - Vision AI is the universal last resort for any document that local tools can't handle
 - For Google Drive documents, use the `google-drive` skill to download first

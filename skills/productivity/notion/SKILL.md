@@ -26,6 +26,10 @@ Use the Notion API via curl to create, read, update pages, databases (data sourc
    ```
 4. **Important:** Share target pages/databases with your integration in Notion (click "..." → "Connect to" → your integration name)
 
+## Step 0: Verify Setup
+
+Before proceeding, verify that NOTION_API_KEY is set. Use terminal to run: `echo $NOTION_API_KEY | head -c5`. If empty, inform the user they need to set up a Notion integration at https://www.notion.so/my-integrations
+
 ## API Basics
 
 All requests use this pattern:

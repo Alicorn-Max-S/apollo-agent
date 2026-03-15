@@ -183,6 +183,11 @@ with DDGS() as ddgs:
 - **Package name**: The package is `ddgs` (was previously `duckduckgo-search`). Install with `pip install ddgs`.
 - **Empty results**: If ddgs returns nothing, it may be rate-limited. Wait a few seconds and retry.
 
+## Cross-Skill Chaining
+
+- **Auto-use chaining**: When search results contain URLs relevant to the user's query, automatically use `web_extract(urls=[...])` to fetch the top 2-3 most relevant results. If web_extract fails or times out, fall back to `browser_navigate`.
+- **Propose to user**: After finding useful results, propose: "Would you like me to save these sources to memory for your project?" Use the clarify tool to offer this.
+
 ## Validated With
 
 Smoke-tested with `ddgs==9.11.2` on Python 3.13. All four methods (text, news, images, videos) confirmed working with keyword `max_results`.

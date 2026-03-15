@@ -359,6 +359,9 @@ def _detect_tool_failure(tool_name: str, result: str | None) -> tuple[bool, str]
     Returns ``(is_failure, suffix)`` where *suffix* is an informational tag
     like ``" [exit 1]"`` for terminal failures, or ``" [error]"`` for generic
     failures.  On success, returns ``(False, "")``.
+
+    The suffix may include a recovery hint (e.g. ``" [error: use read_file
+    first to verify exact content]"``) to help the model self-correct.
     """
     if result is None:
         return False, ""
@@ -368,6 +371,9 @@ def _detect_tool_failure(tool_name: str, result: str | None) -> tuple[bool, str]
             data = json.loads(result)
             exit_code = data.get("exit_code")
             if exit_code is not None and exit_code != 0:
+                output_lower = (data.get("output") or "").lower()
+                if "command not found" in output_lower:
+                    return True, f" [exit {exit_code}: command not found — check spelling or install]"
                 return True, f" [exit {exit_code}]"
         except (json.JSONDecodeError, TypeError, AttributeError):
             logger.debug("Could not parse terminal result as JSON for exit code check")
@@ -385,6 +391,11 @@ def _detect_tool_failure(tool_name: str, result: str | None) -> tuple[bool, str]
     # Generic heuristic for non-terminal tools
     lower = result[:500].lower()
     if '"error"' in lower or '"failed"' in lower or result.startswith("Error"):
+        # Tool-specific recovery hints
+        if tool_name == "patch" and ("not found" in lower or "no match" in lower):
+            return True, " [error: use read_file first to verify exact content]"
+        if tool_name == "read_file" and "not found" in lower:
+            return True, " [error: use search_files(target='files') to find correct path]"
         return True, " [error]"
 
     return False, ""
