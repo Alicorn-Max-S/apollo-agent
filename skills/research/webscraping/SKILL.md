@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [webscraping, scraping, extraction, free, firecrawl, research, web]
-    related_skills: [duckduckgo-search, arxiv, domain-intel]
+    related_skills: [websearch, arxiv, domain-intel]
     fallback_for_toolsets: []
 prerequisites:
   commands: [curl, python3]

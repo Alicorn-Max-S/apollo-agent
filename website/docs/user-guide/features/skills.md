@@ -117,7 +117,7 @@ metadata:
 | `requires_toolsets` | Skill is **hidden** when the listed toolsets are unavailable. Shown when they're present. |
 | `requires_tools` | Same, but checks individual tools. |
 
-**Example:** The built-in `duckduckgo-search` skill uses `fallback_for_toolsets: [web]`. When you have `FIRECRAWL_API_KEY` set, the web toolset is available and the agent uses `web_search` — the DuckDuckGo skill stays hidden. If the API key is missing, the web toolset is unavailable and the DuckDuckGo skill automatically appears as a fallback.
+**Example:** A skill can use `fallback_for_toolsets: [web]` to only appear when the web toolset is unavailable. When you have `FIRECRAWL_API_KEY` set, the web toolset is available and the agent uses `web_search` — the fallback skill stays hidden. If the API key is missing, the web toolset is unavailable and the fallback skill automatically appears.
 
 Skills without any conditional fields behave exactly as before — they're always shown.
 

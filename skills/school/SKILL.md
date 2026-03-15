@@ -17,7 +17,7 @@ A curated set of skills for high school students. Use `skill_view("<skill-name>"
 - **obsidian** — Markdown note-taking vault
 
 ## Research & Web
-- **duckduckgo-search** — Search the web for information (free, no API key)
+- **websearch** — Search the web for student-friendly, educational information (safe-search filtered, trusted sources prioritised, APA citations)
 - **arxiv** — Search academic papers (AP/advanced classes, science fair)
 - **webscraping** — Extract content from web pages
 - **parallel-cli** — Deep multi-source web research
