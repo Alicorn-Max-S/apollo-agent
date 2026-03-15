@@ -1627,27 +1627,23 @@ def _reset_config_provider() -> Path:
 
 
 def _get_recent_models(
-    provider_model_ids: Optional[List[str]] = None,
+    provider: Optional[str] = None,
     limit: int = 3,
 ) -> List[str]:
     """Return most recently used model IDs, optionally filtered to a provider.
 
-    When *provider_model_ids* is given, only models in that list are returned.
-    Otherwise returns global recent models (any provider).  Returns ``[]`` on
-    any error so callers never need to handle failures.
+    When *provider* is given (e.g. ``"openrouter"``), only selections for
+    that provider are returned.  Otherwise returns global recent models.
+    Returns ``[]`` on any error so callers never need to handle failures.
     """
     try:
         from hermes_state import SessionDB
         db = SessionDB()
-        all_recent = db.recently_used_models(limit=30)
+        results = db.recently_used_models(limit=limit, provider=provider)
         db.close()
+        return results
     except Exception:
         return []
-
-    if provider_model_ids is not None:
-        provider_set = set(provider_model_ids)
-        return [m for m in all_recent if m in provider_set][:limit]
-    return all_recent[:limit]
 
 
 _MAX_DISPLAY_MODELS = 15
@@ -1785,11 +1781,13 @@ def _prompt_model_selection(
             return None
 
 
-def _save_model_choice(model_id: str) -> None:
-    """Save the selected model to config.yaml (single source of truth).
+def _save_model_choice(model_id: str, provider: str = None) -> None:
+    """Save the selected model to config.yaml and record the selection.
 
     The model is stored in config.yaml only — NOT in .env.  This avoids
     conflicts in multi-agent setups where env vars would stomp each other.
+    The selection is also recorded in the session DB so that the model
+    selector can show recently used models.
     """
     from hermes_cli.config import save_config, load_config
 
@@ -1800,6 +1798,15 @@ def _save_model_choice(model_id: str) -> None:
     else:
         config["model"] = {"default": model_id}
     save_config(config)
+
+    # Record selection for "recently used" tracking
+    try:
+        from hermes_state import SessionDB
+        db = SessionDB()
+        db.record_model_selection(model_id, provider=provider)
+        db.close()
+    except Exception:
+        pass
 
 
 def login_command(args) -> None:
@@ -2150,11 +2157,11 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
 
             print()
             if model_ids:
-                provider_recent = _get_recent_models(model_ids, limit=5)
+                provider_recent = _get_recent_models(provider="nous", limit=5)
                 selected_model = _prompt_model_selection(
                     model_ids, provider_recent=provider_recent, provider_label="Nous Portal")
                 if selected_model:
-                    _save_model_choice(selected_model)
+                    _save_model_choice(selected_model, provider="nous")
                     print(f"Default model set to: {selected_model}")
             else:
                 print("No models were returned by the inference API.")

@@ -25,7 +25,7 @@ from typing import Dict, Any, List, Optional
 
 DEFAULT_DB_PATH = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes")) / "state.db"
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -64,10 +64,18 @@ CREATE TABLE IF NOT EXISTS messages (
     finish_reason TEXT
 );
 
+CREATE TABLE IF NOT EXISTS model_selections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    model TEXT NOT NULL,
+    provider TEXT,
+    selected_at REAL NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_sessions_source ON sessions(source);
 CREATE INDEX IF NOT EXISTS idx_sessions_parent ON sessions(parent_session_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_started ON sessions(started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id, timestamp);
+CREATE INDEX IF NOT EXISTS idx_model_selections_at ON model_selections(selected_at DESC);
 """
 
 FTS_SQL = """
@@ -152,6 +160,24 @@ class SessionDB:
                 except sqlite3.OperationalError:
                     pass  # Index already exists
                 cursor.execute("UPDATE schema_version SET version = 4")
+            if current_version < 5:
+                # v5: add model_selections table for tracking model choices
+                try:
+                    cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS model_selections (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            model TEXT NOT NULL,
+                            provider TEXT,
+                            selected_at REAL NOT NULL
+                        )
+                    """)
+                    cursor.execute(
+                        "CREATE INDEX IF NOT EXISTS idx_model_selections_at "
+                        "ON model_selections(selected_at DESC)"
+                    )
+                except sqlite3.OperationalError:
+                    pass
+                cursor.execute("UPDATE schema_version SET version = 5")
 
         # Unique title index — always ensure it exists (safe to run after migrations
         # since the title column is guaranteed to exist at this point)
@@ -697,14 +723,59 @@ class SessionDB:
             )
         return [dict(row) for row in cursor.fetchall()]
 
-    def recently_used_models(self, limit: int = 10) -> List[str]:
-        """Return distinct model IDs ordered by most recent use.
+    def record_model_selection(self, model: str, provider: str = None) -> None:
+        """Record a model selection event (from ``hermes model`` or direct switch)."""
+        if not model or not model.strip():
+            return
+        try:
+            self._conn.execute(
+                "INSERT INTO model_selections (model, provider, selected_at) VALUES (?, ?, ?)",
+                (model.strip(), provider, time.time()),
+            )
+            self._conn.commit()
+        except Exception:
+            pass
 
-        Looks at the last *limit* sessions and returns the distinct model IDs
-        in recency order (most recently used first).  Sessions with NULL or
-        empty model values are excluded.
+    def recently_used_models(self, limit: int = 10, provider: str = None) -> List[str]:
+        """Return distinct model IDs ordered by most recent selection.
+
+        Queries the ``model_selections`` table (populated when users pick a
+        model via ``hermes model``).  Falls back to the ``sessions`` table
+        if no selections have been recorded yet.
+
+        When *provider* is given, only selections for that provider are
+        returned.
         """
         try:
+            # Try model_selections table first
+            if provider:
+                cursor = self._conn.execute(
+                    """
+                    SELECT model, MAX(selected_at) AS last_used
+                    FROM model_selections
+                    WHERE provider = ?
+                    GROUP BY model
+                    ORDER BY last_used DESC
+                    LIMIT ?
+                    """,
+                    (provider, limit),
+                )
+            else:
+                cursor = self._conn.execute(
+                    """
+                    SELECT model, MAX(selected_at) AS last_used
+                    FROM model_selections
+                    GROUP BY model
+                    ORDER BY last_used DESC
+                    LIMIT ?
+                    """,
+                    (limit,),
+                )
+            results = [row[0] for row in cursor.fetchall()]
+            if results:
+                return results
+
+            # Fallback: use sessions table for legacy data
             cursor = self._conn.execute(
                 """
                 SELECT model FROM (

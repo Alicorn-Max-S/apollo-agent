@@ -846,7 +846,7 @@ def cmd_model(args):
     # Handle recently used model direct-switch
     if selected_key.startswith("__recent:"):
         model_id = selected_key[len("__recent:"):]
-        _save_model_choice(model_id)
+        _save_model_choice(model_id)  # provider unknown for direct switch
         print(f"Switched to: {model_id}")
         return
 
@@ -942,7 +942,7 @@ def _model_flow_openrouter(config, current_model=""):
     from hermes_cli.models import model_ids
     openrouter_models = model_ids()
 
-    provider_recent = _get_recent_models(openrouter_models, limit=5)
+    provider_recent = _get_recent_models(provider="openrouter", limit=5)
     selected = _prompt_model_selection(openrouter_models, current_model=current_model,
                                        provider_recent=provider_recent, provider_label="OpenRouter")
     if selected:
@@ -950,7 +950,7 @@ def _model_flow_openrouter(config, current_model=""):
         if get_env_value("OPENAI_BASE_URL"):
             save_env_value("OPENAI_BASE_URL", "")
             save_env_value("OPENAI_API_KEY", "")
-        _save_model_choice(selected)
+        _save_model_choice(selected, provider="openrouter")
 
         # Update config provider and deactivate any OAuth provider
         from hermes_cli.config import load_config, save_config
@@ -1030,11 +1030,11 @@ def _model_flow_nous(config, current_model=""):
         print("No models returned by the inference API.")
         return
 
-    provider_recent = _get_recent_models(model_ids, limit=5)
+    provider_recent = _get_recent_models(provider="nous", limit=5)
     selected = _prompt_model_selection(model_ids, current_model=current_model,
                                        provider_recent=provider_recent, provider_label="Nous Portal")
     if selected:
-        _save_model_choice(selected)
+        _save_model_choice(selected, provider="nous")
         # Reactivate Nous as the provider and update config
         inference_url = creds.get("base_url", "")
         _update_config_for_provider("nous", inference_url)
@@ -1082,11 +1082,11 @@ def _model_flow_openai_codex(config, current_model=""):
 
     codex_models = get_codex_model_ids(access_token=_codex_token)
 
-    provider_recent = _get_recent_models(codex_models, limit=5)
+    provider_recent = _get_recent_models(provider="openai-codex", limit=5)
     selected = _prompt_model_selection(codex_models, current_model=current_model,
                                        provider_recent=provider_recent, provider_label="Codex")
     if selected:
-        _save_model_choice(selected)
+        _save_model_choice(selected, provider="openai-codex")
         _update_config_for_provider("openai-codex", DEFAULT_CODEX_BASE_URL)
         # Clear custom endpoint env vars that would otherwise override Codex.
         if get_env_value("OPENAI_BASE_URL"):
@@ -1143,7 +1143,7 @@ def _model_flow_custom(config):
         save_env_value("OPENAI_API_KEY", api_key)
 
     if model_name:
-        _save_model_choice(model_name)
+        _save_model_choice(model_name, provider="custom")
 
         # Update config and deactivate any OAuth provider
         cfg = load_config()
@@ -1291,7 +1291,7 @@ def _model_flow_named_custom(config, provider_info):
         save_env_value("OPENAI_BASE_URL", base_url)
         if api_key:
             save_env_value("OPENAI_API_KEY", api_key)
-        _save_model_choice(saved_model)
+        _save_model_choice(saved_model, provider="custom")
 
         cfg = load_config()
         model = cfg.get("model")
@@ -1365,7 +1365,7 @@ def _model_flow_named_custom(config, provider_info):
     save_env_value("OPENAI_BASE_URL", base_url)
     if api_key:
         save_env_value("OPENAI_API_KEY", api_key)
-    _save_model_choice(model_name)
+    _save_model_choice(model_name, provider="custom")
 
     cfg = load_config()
     model = cfg.get("model")
@@ -1485,7 +1485,7 @@ def _model_flow_kimi(config, current_model=""):
         model_list = _PROVIDER_MODELS.get(provider_id, [])
 
     if model_list:
-        provider_recent = _get_recent_models(model_list, limit=5)
+        provider_recent = _get_recent_models(provider="kimi-coding", limit=5)
         selected = _prompt_model_selection(model_list, current_model=current_model,
                                            provider_recent=provider_recent, provider_label="Kimi")
     else:
@@ -1500,7 +1500,7 @@ def _model_flow_kimi(config, current_model=""):
             save_env_value("OPENAI_BASE_URL", "")
             save_env_value("OPENAI_API_KEY", "")
 
-        _save_model_choice(selected)
+        _save_model_choice(selected, provider=provider_id)
 
         # Update config with provider and base URL
         cfg = load_config()
@@ -1587,7 +1587,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
         # else: no defaults either, will fall through to raw input
 
     if model_list:
-        provider_recent = _get_recent_models(model_list, limit=5)
+        provider_recent = _get_recent_models(provider=provider_id, limit=5)
         selected = _prompt_model_selection(model_list, current_model=current_model,
                                            provider_recent=provider_recent, provider_label=pconfig.name)
     else:
@@ -1602,7 +1602,7 @@ def _model_flow_api_key_provider(config, provider_id, current_model=""):
             save_env_value("OPENAI_BASE_URL", "")
             save_env_value("OPENAI_API_KEY", "")
 
-        _save_model_choice(selected)
+        _save_model_choice(selected, provider=provider_id)
 
         # Update config with provider and base URL
         cfg = load_config()
@@ -1779,7 +1779,7 @@ def _model_flow_anthropic(config, current_model=""):
     # Model selection
     model_list = _PROVIDER_MODELS.get("anthropic", [])
     if model_list:
-        provider_recent = _get_recent_models(model_list, limit=5)
+        provider_recent = _get_recent_models(provider="anthropic", limit=5)
         selected = _prompt_model_selection(model_list, current_model=current_model,
                                            provider_recent=provider_recent, provider_label="Anthropic")
     else:
@@ -1794,7 +1794,7 @@ def _model_flow_anthropic(config, current_model=""):
             save_env_value("OPENAI_BASE_URL", "")
             save_env_value("OPENAI_API_KEY", "")
 
-        _save_model_choice(selected)
+        _save_model_choice(selected, provider="anthropic")
 
         # Update config with provider — clear base_url since
         # resolve_runtime_provider() always hardcodes Anthropic's URL.

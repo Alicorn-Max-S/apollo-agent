@@ -7,38 +7,29 @@ import pytest
 class TestGetRecentModels:
     """Tests for _get_recent_models()."""
 
-    def test_global_mode_returns_up_to_limit(self):
+    def test_global_mode_passes_limit_to_db(self):
         from hermes_cli.auth import _get_recent_models
 
         mock_db = MagicMock()
-        mock_db.recently_used_models.return_value = ["m-a", "m-b", "m-c", "m-d", "m-e"]
+        mock_db.recently_used_models.return_value = ["m-a", "m-b", "m-c"]
 
         with patch("hermes_state.SessionDB", return_value=mock_db):
             result = _get_recent_models(limit=3)
 
+        mock_db.recently_used_models.assert_called_once_with(limit=3, provider=None)
         assert result == ["m-a", "m-b", "m-c"]
 
     def test_provider_filtered(self):
         from hermes_cli.auth import _get_recent_models
 
         mock_db = MagicMock()
-        mock_db.recently_used_models.return_value = ["m-a", "m-b", "m-c", "m-d"]
+        mock_db.recently_used_models.return_value = ["m-a", "m-c"]
 
         with patch("hermes_state.SessionDB", return_value=mock_db):
-            result = _get_recent_models(["m-a", "m-c", "m-e"], limit=5)
+            result = _get_recent_models(provider="openrouter", limit=5)
 
+        mock_db.recently_used_models.assert_called_once_with(limit=5, provider="openrouter")
         assert result == ["m-a", "m-c"]
-
-    def test_preserves_recency_order(self):
-        from hermes_cli.auth import _get_recent_models
-
-        mock_db = MagicMock()
-        mock_db.recently_used_models.return_value = ["m-c", "m-a", "m-b"]
-
-        with patch("hermes_state.SessionDB", return_value=mock_db):
-            result = _get_recent_models(["m-a", "m-b", "m-c"], limit=5)
-
-        assert result == ["m-c", "m-a", "m-b"]
 
     def test_returns_empty_on_db_error(self):
         from hermes_cli.auth import _get_recent_models
@@ -47,17 +38,6 @@ class TestGetRecentModels:
             result = _get_recent_models(limit=3)
 
         assert result == []
-
-    def test_respects_limit(self):
-        from hermes_cli.auth import _get_recent_models
-
-        mock_db = MagicMock()
-        mock_db.recently_used_models.return_value = [f"m-{i}" for i in range(10)]
-
-        with patch("hermes_state.SessionDB", return_value=mock_db):
-            result = _get_recent_models([f"m-{i}" for i in range(10)], limit=3)
-
-        assert len(result) == 3
 
 
 class TestPromptModelSelectionSections:
@@ -77,9 +57,8 @@ class TestPromptModelSelectionSections:
                 )
 
         output = capsys.readouterr().out
-        # m-a and m-b should appear only once each (in Recent section)
         lines = output.strip().split("\n")
-        model_lines = [l.strip() for l in lines if l.strip().startswith(("1.", "2.", "3.", "4.", "5.", "6."))]
+        model_lines = [l.strip() for l in lines if l.strip() and l.strip()[0].isdigit()]
         model_names = [l.split(". ", 1)[1].split("  ←")[0].strip() for l in model_lines if ". " in l]
         # No duplicates
         assert len(model_names) == len(set(model_names))
@@ -101,7 +80,6 @@ class TestPromptModelSelectionSections:
 
         output = capsys.readouterr().out
         lines = output.strip().split("\n")
-        # Count numbered model lines (exclude separators, custom, skip)
         numbered = [l for l in lines if l.strip() and l.strip()[0].isdigit()]
         # Subtract 2 for "Enter custom model name" and "Skip"
         model_count = len(numbered) - 2
@@ -123,7 +101,6 @@ class TestPromptModelSelectionSections:
                 )
 
         output = capsys.readouterr().out
-        # Find the Recent section and All Models section
         lines = output.strip().split("\n")
         in_recent = False
         recent_count = 0
@@ -167,3 +144,71 @@ class TestPromptModelSelectionSections:
         output = capsys.readouterr().out
         assert "Recent (TestProvider)" in output
         assert "All Models" in output
+
+
+class TestModelSelectionsDB:
+    """Tests for record_model_selection and recently_used_models with model_selections table."""
+
+    def test_record_and_retrieve(self, tmp_path):
+        from hermes_state import SessionDB
+        db = SessionDB(db_path=tmp_path / "test.db")
+
+        db.record_model_selection("model-a", provider="openrouter")
+        db.record_model_selection("model-b", provider="openrouter")
+        db.record_model_selection("model-c", provider="anthropic")
+
+        # Global query
+        result = db.recently_used_models(limit=10)
+        assert result == ["model-c", "model-b", "model-a"]
+
+        # Provider-filtered query
+        result = db.recently_used_models(limit=10, provider="openrouter")
+        assert result == ["model-b", "model-a"]
+
+        result = db.recently_used_models(limit=10, provider="anthropic")
+        assert result == ["model-c"]
+
+        db.close()
+
+    def test_deduplication_in_selections(self, tmp_path):
+        from hermes_state import SessionDB
+        import time
+        db = SessionDB(db_path=tmp_path / "test.db")
+
+        db.record_model_selection("model-a", provider="openrouter")
+        time.sleep(0.01)
+        db.record_model_selection("model-b", provider="openrouter")
+        time.sleep(0.01)
+        db.record_model_selection("model-a", provider="openrouter")
+
+        result = db.recently_used_models(limit=10, provider="openrouter")
+        # model-a should be first (most recent), model-b second
+        assert result == ["model-a", "model-b"]
+        db.close()
+
+    def test_fallback_to_sessions(self, tmp_path):
+        """When no model_selections exist, falls back to sessions table."""
+        from hermes_state import SessionDB
+        db = SessionDB(db_path=tmp_path / "test.db")
+
+        # No model_selections, but sessions have models
+        db._conn.execute(
+            "INSERT INTO sessions (id, source, model, started_at) VALUES (?, ?, ?, ?)",
+            ("s1", "cli", "legacy-model", 1000.0),
+        )
+        db._conn.commit()
+
+        result = db.recently_used_models(limit=10)
+        assert result == ["legacy-model"]
+        db.close()
+
+    def test_empty_model_ignored(self, tmp_path):
+        from hermes_state import SessionDB
+        db = SessionDB(db_path=tmp_path / "test.db")
+
+        db.record_model_selection("", provider="openrouter")
+        db.record_model_selection("model-a", provider="openrouter")
+
+        result = db.recently_used_models(limit=10)
+        assert result == ["model-a"]
+        db.close()
