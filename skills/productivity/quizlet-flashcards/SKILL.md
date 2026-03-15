@@ -79,21 +79,26 @@ After the flashcards are generated, remind the user of the import path:
 
 ## Format Requirements
 
-- Separate the front and back of each flashcard with a **single tab character**
+**CRITICAL — Tab Separation:**
+Every flashcard MUST use a single literal tab character (`\t`) between the front and back. Do NOT use spaces, multiple spaces, or any other whitespace — it MUST be a tab. Quizlet import will break if tabs are missing or inconsistent. Double-check every single line before outputting.
+
 - **Never use colons in the output** — use semicolons, dashes, or commas instead
 - Output **only the flashcards** — no introductions, explanations, or closing remarks
 - Each flashcard appears on its **own line**
 - No blank lines between cards
 - No numbering or bullet points
 
-### Example Output
+### Output Method
+
+To guarantee correct tab formatting, write the flashcards to a file using the `write_file` tool. Build the content with literal `\t` tab characters between front and back on each line. Example:
 
 ```
-hi	hola
-goodbye	adiós
-please	por favor
-thank you	gracias
+write_file("flashcards.txt", "hi\thola\ngoodbye\tadiós\nplease\tpor favor\nthank you\tgracias\n")
 ```
+
+Then tell the user to open the file, select all, copy, and paste into Quizlet's import box.
+
+**Do NOT output flashcards as plain text in chat** — tabs are not preserved reliably in chat output. Always write to a file.
 
 ---
 
@@ -149,8 +154,9 @@ When creating flashcards for language learning:
 
 ## Quality Checklist
 
-Before outputting flashcards, verify:
-- [ ] Each card has exactly one tab separating front from back
+Before writing the flashcard file, verify:
+- [ ] Each line uses a literal `\t` tab character between front and back (not spaces)
+- [ ] Flashcards are written to a file, not output as chat text
 - [ ] No colons appear anywhere in the output
 - [ ] No introductory or closing text — just the cards
 - [ ] Each card is on its own line with no blank lines between
