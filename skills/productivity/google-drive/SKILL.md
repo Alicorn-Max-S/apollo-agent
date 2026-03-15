@@ -13,24 +13,45 @@ metadata:
 
 # Google Drive Content Reader
 
-Read content from Google Drive links. Supports two authentication methods:
+Read content from Google Drive links. Three methods are available — try them in order:
 
-- **API Mode**: Uses Google Workspace OAuth2 (requires Google Developer Console access)
-- **Browser SSO Mode**: Uses browser automation with persistent login sessions — works for school/enterprise accounts that block Developer Console access
+1. **Direct Fetch** (fastest): Use `web_extract` to grab content from the export URL — works for publicly shared files, no auth needed
+2. **API Mode**: Uses Google Workspace OAuth2 (requires Google Developer Console access)
+3. **Browser SSO Mode**: Uses browser automation with persistent login sessions — works for school/enterprise accounts that block Developer Console access
 
 ## Scripts
 
 - `scripts/gdrive_read.py` — URL parser and export URL builder
 
-## First-Time Setup (Auto-Detection)
+## How to Read a Google Drive Link
 
-When the user asks you to read a Google Drive link for the first time, follow this detection flow:
+When a user shares a Google Drive link, **always start here** — follow this flow in order:
 
-### Step 1: Check Memory
+### Step 0: Parse the URL
+
+```bash
+GDRIVE="python ~/.hermes/skills/productivity/google-drive/scripts/gdrive_read.py"
+$GDRIVE parse "THE_DRIVE_URL"
+```
+
+This returns JSON with `file_id`, `file_type`, `export_url`, and `view_url`.
+
+### Step 1: Try Direct Fetch (No Auth Needed)
+
+Try fetching the export URL directly using `web_extract`. This works for files shared as "Anyone with the link":
+
+```
+web_extract(urls=[export_url], format="markdown")
+```
+
+- If this returns the **document content** (actual text, not a login page or HTML error) → done! Return the content to the user.
+- If this returns a **Google login page** or an error → the file requires authentication. Continue to Step 2.
+
+### Step 2: Check Memory for Auth Method
 
 Look in your memory for an existing `google-drive-auth` entry. If found, skip to the appropriate method (API or Browser SSO) below.
 
-### Step 2: Check Existing Google Workspace Auth
+### Step 3: Check Existing Google Workspace Auth
 
 ```bash
 python ~/.hermes/skills/productivity/google-workspace/scripts/setup.py --check 2>/dev/null
@@ -41,12 +62,21 @@ If output is `AUTHENTICATED`, use **Method A (API Mode)** below. Save to memory:
 memory(action="add", target="memory", content="google-drive-auth: API mode via google-workspace skill. Already authenticated.")
 ```
 
-### Step 3: Ask About Developer Console Access
+### Step 4: Check if Browser Tools Are Available
 
-If not already authenticated, ask the user:
+Before trying browser SSO, check if browser tools are available by looking at your available tools list. If `browser_navigate` is NOT in your tools:
+
+Tell the user:
+> "Browser tools aren't available in this environment. To enable browser-based Google Drive access, run: `npm install` in the hermes-agent directory, then `npx agent-browser install --with-deps`. Alternatively, you can make the document publicly accessible (Share → Anyone with the link → Viewer)."
+
+If browser tools ARE available, continue.
+
+### Step 5: Ask About Developer Console Access
+
+Ask the user:
 
 ```
-clarify("Can you access the Google Developer Console (console.cloud.google.com) with your Google account? If you're using a school or enterprise account, you may not have access.", ["Yes, I can access it", "No, I cannot / I'm not sure"])
+clarify("The file requires authentication. Can you access the Google Developer Console (console.cloud.google.com) with your Google account? If you're using a school or enterprise account, you may not have access.", ["Yes, I can access it", "No, I cannot / I'm not sure"])
 ```
 
 - If **yes**: guide them through the google-workspace skill setup (load that skill with `skill_view("google-workspace")`), then use API mode.
@@ -238,3 +268,5 @@ If you can't identify the provider from the snapshot, use `browser_vision()` to 
 | 2FA times out | Ask user to retry 2FA. Some authenticator apps have short windows. |
 | Unrecognized login page | Use `browser_vision()` to see the page, ask user for guidance. |
 | Browser profile corrupted | Delete `~/.hermes/browser-profiles/google-drive/` and re-login. |
+| Browser tools not available | Run `npm install` in hermes-agent dir, then `npx agent-browser install --with-deps`. |
+| `web_extract` returns login page | File requires auth — use browser SSO mode or make the doc publicly shared. |
