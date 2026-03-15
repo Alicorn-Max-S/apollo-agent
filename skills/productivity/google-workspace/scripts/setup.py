@@ -159,6 +159,8 @@ def get_auth_url():
         access_type="offline",
         prompt="consent",
     )
+    # Persist the code verifier so exchange_auth_code() can reuse it
+    (HERMES_HOME / "google_code_verifier.txt").write_text(flow.code_verifier)
     # Print just the URL so the agent can extract it cleanly
     print(auth_url)
 
@@ -177,6 +179,11 @@ def exchange_auth_code(code: str):
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI,
     )
+
+    # Restore the code verifier that was saved during --auth-url
+    verifier_path = HERMES_HOME / "google_code_verifier.txt"
+    if verifier_path.exists():
+        flow.code_verifier = verifier_path.read_text().strip()
 
     # The code might come as a full redirect URL or just the code itself
     if code.startswith("http"):
