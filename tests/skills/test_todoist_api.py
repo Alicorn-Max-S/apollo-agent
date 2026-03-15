@@ -136,7 +136,8 @@ class TestGetTask(unittest.TestCase):
         output = json.loads(buf.getvalue())
         self.assertEqual(output["id"], "123")
         self.assertEqual(output["duration"]["amount"], 60)
-        self.assertEqual(output["priority"], 3)
+        # API returns priority 3 → user-facing P2 (high)
+        self.assertEqual(output["priority"], 2)
 
 
 # ---------------------------------------------------------------------------
@@ -179,13 +180,14 @@ class TestCreateTask(unittest.TestCase):
     @patch.object(todoist_api, "TODOIST_API_TOKEN", "tok")
     @patch("todoist_api.requests")
     def test_create_task_with_duration(self, mock_requests):
+        # API returns priority 2 (which is user-facing P3/medium)
         created = {
             "id": "999",
             "content": "Study math",
             "description": "",
             "due": {"date": "2026-03-16", "datetime": "2026-03-16T10:00:00Z", "string": "", "timezone": "", "is_recurring": False},
             "duration": {"amount": 90, "unit": "minute"},
-            "priority": 3,
+            "priority": 2,
             "project_id": "456",
             "labels": ["school"],
             "url": "",
@@ -193,6 +195,7 @@ class TestCreateTask(unittest.TestCase):
         mock_requests.post.return_value = _mock_response(created)
         mock_requests.HTTPError = Exception
 
+        # User passes priority=3 (P3/medium), script converts to API value 2
         args = _make_args(
             content="Study math", description="", due_datetime="2026-03-16T10:00:00Z",
             due_string=None, due_date=None, duration=90,
@@ -201,13 +204,16 @@ class TestCreateTask(unittest.TestCase):
         buf = io.StringIO()
         with patch("sys.stdout", buf):
             todoist_api.create_task(args)
-        # Verify POST body has duration and duration_unit
+        # Verify POST body: user priority 3 → API priority 2
         call_kwargs = mock_requests.post.call_args
         body = call_kwargs.kwargs.get("json", {})
         self.assertEqual(body["duration"], {"amount": 90, "unit": "minute"})
         self.assertEqual(body["due_datetime"], "2026-03-16T10:00:00Z")
-        self.assertEqual(body["priority"], 3)
+        self.assertEqual(body["priority"], 2)
         self.assertEqual(body["labels"], ["school"])
+        # Output should show user-facing priority 3 (converted back from API 2)
+        output = json.loads(buf.getvalue())
+        self.assertEqual(output["priority"], 3)
 
     @patch.object(todoist_api, "TODOIST_API_TOKEN", "tok")
     @patch("todoist_api.requests")
@@ -597,6 +603,67 @@ class TestConfigCheck(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # helper functions
 # ---------------------------------------------------------------------------
+class TestPriorityConversion(unittest.TestCase):
+    def test_user_to_api_priority(self):
+        """User P1 (urgent) → API 4, P4 (normal) → API 1."""
+        self.assertEqual(todoist_api._user_to_api_priority(1), 4)
+        self.assertEqual(todoist_api._user_to_api_priority(2), 3)
+        self.assertEqual(todoist_api._user_to_api_priority(3), 2)
+        self.assertEqual(todoist_api._user_to_api_priority(4), 1)
+
+    def test_api_to_user_priority(self):
+        """API 4 → User P1 (urgent), API 1 → User P4 (normal)."""
+        self.assertEqual(todoist_api._api_to_user_priority(4), 1)
+        self.assertEqual(todoist_api._api_to_user_priority(3), 2)
+        self.assertEqual(todoist_api._api_to_user_priority(2), 3)
+        self.assertEqual(todoist_api._api_to_user_priority(1), 4)
+
+    def test_roundtrip(self):
+        """Converting user → API → user should return the original value."""
+        for p in range(1, 5):
+            self.assertEqual(
+                todoist_api._api_to_user_priority(todoist_api._user_to_api_priority(p)),
+                p,
+            )
+
+    @patch.object(todoist_api, "TODOIST_API_TOKEN", "tok")
+    @patch("todoist_api.requests")
+    def test_create_task_priority_p1_urgent(self, mock_requests):
+        """User priority 1 (P1/urgent) should send API priority 4."""
+        created = {
+            "id": "999", "content": "Urgent task", "description": "",
+            "due": None, "duration": None, "priority": 4,
+            "project_id": "", "labels": [], "url": "",
+        }
+        mock_requests.post.return_value = _mock_response(created)
+        mock_requests.HTTPError = Exception
+
+        args = _make_args(
+            content="Urgent task", description="", due_datetime=None,
+            due_string=None, due_date=None, duration=None,
+            project_id=None, priority=1, labels=None, deadline=None,
+        )
+        buf = io.StringIO()
+        with patch("sys.stdout", buf):
+            todoist_api.create_task(args)
+        body = mock_requests.post.call_args.kwargs["json"]
+        self.assertEqual(body["priority"], 4)  # API value
+        output = json.loads(buf.getvalue())
+        self.assertEqual(output["priority"], 1)  # User-facing value
+
+    @patch.object(todoist_api, "TODOIST_API_TOKEN", "tok")
+    @patch("todoist_api.requests")
+    def test_task_summary_converts_priority(self, mock_requests):
+        """_task_summary should convert API priority back to user-facing."""
+        task = {
+            "id": "123", "content": "Test", "description": "",
+            "due": None, "duration": None, "priority": 4,
+            "project_id": "", "labels": [], "url": "",
+        }
+        summary = todoist_api._task_summary(task)
+        self.assertEqual(summary["priority"], 1)  # API 4 → User P1
+
+
 class TestHelpers(unittest.TestCase):
     def test_parse_working_hours(self):
         sh, sm, eh, em = todoist_api._parse_working_hours("08:00-22:00")
