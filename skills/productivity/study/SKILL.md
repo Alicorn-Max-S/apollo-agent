@@ -383,7 +383,7 @@ The response includes `accent_mode` and `spelling_mode`. Apply them:
 
 ### Session-Level Overrides (Temporary)
 
-A user may want to temporarily change their grading mode for the current session only, without permanently updating the category's stored settings.
+A user may want to temporarily change their grading mode for the current session only, without permanently updating the category's stored settings. The override **only changes how accuracy is scored** — all answers are still fully recorded with their actual `--accent-correct` and `--spelling-correct` values so the data stays accurate.
 
 **When the user requests a temporary override** (e.g., "count accents as wrong for this session" or "be lenient on spelling today"):
 
@@ -392,9 +392,11 @@ A user may want to temporarily change their grading mode for the current session
 
 2. **Track the override in conversation context only.** Do NOT call `set_grading_mode`. Simply remember the override and apply it when grading each answer for the rest of the session.
 
-3. **Apply the override the same way as a permanent mode** — the grading logic is identical, only the storage differs. Use the overridden mode when calculating accuracy for `$STUDY record`.
+3. **Apply the override the same way as a permanent mode** — the grading logic is identical, only the storage differs. Use the overridden mode when calculating the `--accuracy` value for `$STUDY record`.
 
-4. **The override expires when the conversation ends.** The next session will use the category's stored mode from the database as usual.
+4. **Always record the actual accent/spelling correctness.** Regardless of the override mode, `--accent-correct` and `--spelling-correct` must reflect whether the accent/spelling was actually correct (1) or not (0). The override only changes the `--accuracy` value.
+
+5. **The override expires when the conversation ends.** The next session will use the category's stored mode from the database as usual.
 
 **How to handle conflicts:**
 - Session override takes precedence over the stored category mode
@@ -404,7 +406,19 @@ A user may want to temporarily change their grading mode for the current session
 **Example interaction:**
 > **User:** "Let's study Spanish pretérito, but count accent errors as wrong today."
 > **Agent:** "Starting pretérito practice with strict accent grading for this session. Your permanent setting (partial) won't change."
-> *(Agent grades accent errors as 0.0 for this session, but records still use `--accent-correct 0` so the error is tracked regardless)*
+
+```bash
+# Session override is "strict", permanent mode is "partial"
+# User writes "hable" instead of "hablé" — accent wrong, content correct
+# Override says strict → accuracy = 0.0, but still record the actual accent status
+$STUDY record ... --accuracy 0.0 --accent-correct 0 --type "conjugation"
+
+# Same scenario with session override "lenient" → accuracy = 1.0, accent still tracked as wrong
+$STUDY record ... --accuracy 1.0 --accent-correct 0 --type "conjugation"
+
+# Accent was actually correct → always record accent-correct 1 regardless of mode
+$STUDY record ... --accuracy 1.0 --accent-correct 1 --type "conjugation"
+```
 
 ### Recording with Modes
 
