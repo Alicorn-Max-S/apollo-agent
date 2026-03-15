@@ -78,6 +78,22 @@ _PROVIDER_MODELS: dict[str, list[str]] = {
         "claude-sonnet-4-20250514",
         "claude-haiku-4-5-20251001",
     ],
+    "google": [
+        "gemini-2.5-pro",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+    ],
+    "openai": [
+        "gpt-4.1",
+        "gpt-4.1-mini",
+        "gpt-4.1-nano",
+        "o4-mini",
+        "o3",
+        "o3-mini",
+        "gpt-4o",
+        "gpt-4o-mini",
+    ],
 }
 
 _PROVIDER_LABELS = {
@@ -89,6 +105,8 @@ _PROVIDER_LABELS = {
     "minimax": "MiniMax",
     "minimax-cn": "MiniMax (China)",
     "anthropic": "Anthropic",
+    "google": "Google Gemini",
+    "openai": "OpenAI",
     "custom": "Custom endpoint",
 }
 
@@ -103,6 +121,10 @@ _PROVIDER_ALIASES = {
     "minimax_cn": "minimax-cn",
     "claude": "anthropic",
     "claude-code": "anthropic",
+    "gemini": "google",
+    "google-gemini": "google",
+    "gpt": "openai",
+    "chatgpt": "openai",
 }
 
 
@@ -137,6 +159,7 @@ def list_available_providers() -> list[dict[str, str]]:
     _PROVIDER_ORDER = [
         "openrouter", "nous", "openai-codex",
         "zai", "kimi-coding", "minimax", "minimax-cn", "anthropic",
+        "google", "openai",
     ]
     # Build reverse alias map
     aliases_for: dict[str, list[str]] = {}

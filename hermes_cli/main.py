@@ -757,6 +757,8 @@ def cmd_model(args):
         "nous": "Nous Portal",
         "openai-codex": "OpenAI Codex",
         "anthropic": "Anthropic",
+        "google": "Google Gemini",
+        "openai": "OpenAI",
         "zai": "Z.AI / GLM",
         "kimi-coding": "Kimi / Moonshot",
         "minimax": "MiniMax",
@@ -776,6 +778,8 @@ def cmd_model(args):
         ("nous", "Nous Portal (Nous Research subscription)"),
         ("openai-codex", "OpenAI Codex"),
         ("anthropic", "Anthropic (Claude models — API key or Claude Code)"),
+        ("google", "Google Gemini (Gemini API direct)"),
+        ("openai", "OpenAI (GPT models — direct API)"),
         ("zai", "Z.AI / GLM (Zhipu AI direct API)"),
         ("kimi-coding", "Kimi / Moonshot (Moonshot AI direct API)"),
         ("minimax", "MiniMax (global direct API)"),
@@ -848,6 +852,10 @@ def cmd_model(args):
         _model_flow_anthropic(config, current_model)
     elif selected_provider == "kimi-coding":
         _model_flow_kimi(config, current_model)
+    elif selected_provider == "google":
+        _model_flow_api_key_provider(config, "google", current_model)
+    elif selected_provider == "openai":
+        _model_flow_api_key_provider(config, "openai", current_model)
     elif selected_provider in ("zai", "minimax", "minimax-cn"):
         _model_flow_api_key_provider(config, selected_provider, current_model)
 
@@ -1377,6 +1385,22 @@ _PROVIDER_MODELS = {
         "MiniMax-M2.5",
         "MiniMax-M2.5-highspeed",
         "MiniMax-M2.1",
+    ],
+    "google": [
+        "gemini-2.5-pro",
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+    ],
+    "openai": [
+        "gpt-4.1",
+        "gpt-4.1-mini",
+        "gpt-4.1-nano",
+        "o4-mini",
+        "o3",
+        "o3-mini",
+        "gpt-4o",
+        "gpt-4o-mini",
     ],
 }
 

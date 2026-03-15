@@ -139,6 +139,22 @@ PROVIDER_REGISTRY: Dict[str, ProviderConfig] = {
         inference_base_url="https://api.anthropic.com",
         api_key_env_vars=("ANTHROPIC_API_KEY", "ANTHROPIC_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN"),
     ),
+    "google": ProviderConfig(
+        id="google",
+        name="Google Gemini",
+        auth_type="api_key",
+        inference_base_url="https://generativelanguage.googleapis.com/v1beta/openai",
+        api_key_env_vars=("GEMINI_API_KEY", "GOOGLE_API_KEY"),
+        base_url_env_var="GEMINI_BASE_URL",
+    ),
+    "openai": ProviderConfig(
+        id="openai",
+        name="OpenAI",
+        auth_type="api_key",
+        inference_base_url="https://api.openai.com/v1",
+        api_key_env_vars=("OPENAI_API_KEY",),
+        base_url_env_var="OPENAI_BASE_URL",
+    ),
     "minimax-cn": ProviderConfig(
         id="minimax-cn",
         name="MiniMax (China)",
@@ -524,6 +540,8 @@ def resolve_provider(
         "kimi": "kimi-coding", "moonshot": "kimi-coding",
         "minimax-china": "minimax-cn", "minimax_cn": "minimax-cn",
         "claude": "anthropic", "claude-code": "anthropic",
+        "gemini": "google", "google-gemini": "google",
+        "gpt": "openai", "chatgpt": "openai",
     }
     normalized = _PROVIDER_ALIASES.get(normalized, normalized)
 
