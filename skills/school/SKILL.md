@@ -16,6 +16,9 @@ A curated set of skills for high school students. Use `skill_view("<skill-name>"
 - **notion** — Organize notes and projects
 - **obsidian** — Markdown note-taking vault
 
+## Study & Practice
+- **study** — Interactive study sessions: upload materials, get quizzed with 10 formats (conjugation, fill-in-blank, multiple choice, etc.), track progress with spaced repetition, get smart suggestions on what to study next
+
 ## Research & Web
 - **duckduckgo-search** — Search the web for information (free, no API key)
 - **arxiv** — Search academic papers (AP/advanced classes, science fair)
@@ -67,6 +70,7 @@ When using school skills, follow these automatic workflows:
 - **Extracted content contains follow-up links relevant to the query** → Fetch up to 3 additional links with `web_extract`.
 - **OCR detects text in an image** → Extract and present the text immediately.
 - **An arxiv paper is found** → Use `web_extract` to fetch the abstract and key sections automatically.
+- **After extracting study material from a document** → Offer to save it via the study skill for future practice sessions.
 
 ### Propose to User (offer these as follow-up actions via clarify tool)
 - **Canvas shows assignments with due dates** → "Would you like me to schedule these deadlines in Todoist?"
@@ -75,3 +79,5 @@ When using school skills, follow these automatic workflows:
 - **After extracting a YouTube transcript** → "Would you like me to create study notes from this video?"
 - **After computing results in Jupyter** → "Would you like me to create a chart/visualization of this data?"
 - **After analyzing CSV/data with text-analysis** → "Would you like me to run this in Jupyter for deeper analysis or graphing?"
+- **After a study session ends** → "Would you like me to schedule your next study session in Todoist?"
+- **After checking Canvas assignments** → "Would you like to study for any of these upcoming assignments?"
