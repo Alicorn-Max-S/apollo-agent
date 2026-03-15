@@ -41,12 +41,14 @@ $STUDY delete_file FILE_ID
 $STUDY update_last_studied FILE_ID
 
 # Record a question result (auto-updates scores and type counts)
+# --accuracy: 0.0 (completely wrong) to 1.0 (perfect). Use fractional values for partial credit.
+# --accent-correct: 0 or 1 (omit if accents are not relevant to the question)
 $STUDY record --class "Spanish 3" --category "pretérito" \
   --question "conjugate hablar (yo, pretérito)" \
-  --correct-answer "hablé" --user-answer "hablé" \
-  --is-correct 1 --type "conjugation"
+  --correct-answer "hablé" --user-answer "hable" \
+  --accuracy 0.9 --accent-correct 0 --type "conjugation"
 
-# Semantic search (find similar past questions to avoid repetition)
+# Semantic search (find similar past questions to AVOID REPETITION — not for accuracy checking)
 $STUDY search_similar --class "Spanish 3" --category "pretérito" \
   --query "conjugate hablar yo pretérito" --limit 5
 
@@ -252,11 +254,13 @@ Then apply this logic:
 3. **Ask the question** and wait for the user's answer
 4. **Check accuracy** using the Answer Checking Rules below
 5. **Give immediate feedback**: explain why correct or incorrect, provide the correct answer if wrong
-6. **Record the result**:
+6. **Handle accent issues** (if applicable): See the Accent Handling section below
+7. **Record the result** with granular accuracy:
    ```bash
    $STUDY record --class "CLASS" --category "CAT" \
      --question "the question" --correct-answer "correct" \
-     --user-answer "what user said" --is-correct 1 --type "conjugation"
+     --user-answer "what user said" --accuracy 0.85 --type "conjugation" \
+     [--accent-correct 0]
    ```
 
 ### Spaced Repetition (Every Other Question)
@@ -265,8 +269,8 @@ Once there are **≥10 question records** for the current class:
 
 - **Alternate**: new question → spaced rep → new question → spaced rep → ...
 - For spaced rep questions:
-  1. Get recent incorrect answers: `$STUDY get_history --class "CLASS" --incorrect-only --limit 10`
-  2. Pick one incorrect item
+  1. Get recent low-accuracy answers: `$STUDY get_history --class "CLASS" --incorrect-only --limit 10` (returns all answers with accuracy < 1.0)
+  2. Pick one low-accuracy item (prefer lower accuracy values first)
   3. Generate a **similar but NOT identical** question on the same concept
      - Example: if user got "hablar yo pretérito" wrong → ask "comer yo pretérito" (same structure, different verb)
   4. Use `$STUDY search_similar` to verify the new question isn't too similar to one already asked
@@ -275,7 +279,7 @@ Once there are **≥10 question records** for the current class:
 ### Progress Updates
 
 - After every **5 questions**, show a mini progress summary:
-  > "Progress: **4/5 correct** so far. You're doing well with regular -ar verbs but missed the irregular stem for 'tener'."
+  > "Progress: **avg accuracy 0.82** over 5 questions. You nailed regular -ar verbs (1.0) but got partial credit on irregular stems (0.5) and missed an accent on 'hablé'."
 
 - After the **session ends** (user says done, or after ~15-20 questions), generate and save a summary:
   ```bash
@@ -285,21 +289,99 @@ Once there are **≥10 question records** for the current class:
 
 ---
 
+## Accuracy Scoring (Granular, Not Binary)
+
+**Accuracy is a float from 0.0 to 1.0**, NOT a binary correct/incorrect. This allows partial credit for answers that are close but not perfect.
+
+### Accuracy Scale
+
+| Accuracy | Meaning | When to Use |
+|----------|---------|-------------|
+| **1.0** | Perfect | Answer is completely correct in every way |
+| **0.9** | Near-perfect | Right concept, minor issue (e.g., missing accent, slight spelling) |
+| **0.7–0.8** | Mostly correct | Key concept present but missing one part (e.g., short answer with 3/4 key points) |
+| **0.5** | Half correct | Got the general idea but significant gaps or errors |
+| **0.3–0.4** | Partially correct | Some relevant knowledge shown but mostly wrong |
+| **0.0** | Completely wrong | Wrong answer, wrong concept, or no attempt |
+
+### Accuracy by Question Type
+
+| Type | How to Calculate Accuracy |
+|------|--------------------------|
+| `conjugation` | 1.0 = correct form & accents. 0.9 = correct form, wrong accent. 0.0 = wrong form/tense |
+| `vocabulary` | 1.0 = exact/synonym match. 0.7 = close synonym or partially correct. 0.0 = wrong |
+| `fill_in_blank` | 1.0 = correct term. 0.9 = correct concept, minor error. 0.0 = wrong term |
+| `full_sentence` | Count key concepts: accuracy = concepts_present / total_concepts (e.g., 3/4 = 0.75) |
+| `short_answer` | Count key points: accuracy = points_present / total_points (e.g., 2/3 = 0.67) |
+| `multiple_choice` | 1.0 = correct choice. 0.0 = wrong choice (no partial credit) |
+| `true_false` | 1.0 = correct T/F + good reasoning. 0.7 = correct T/F, weak reasoning. 0.0 = wrong T/F |
+| `matching` | accuracy = correct_pairs / total_pairs (e.g., 4/5 = 0.8) |
+| `ordering` | accuracy = items_in_correct_position / total_items (e.g., 3/4 = 0.75) |
+| `diagram_label` | accuracy = correct_labels / total_labels (e.g., 5/6 = 0.83) |
+
+---
+
+## Accent Handling
+
+When a question involves accented characters (common in Spanish, French, Portuguese, etc.), track accent correctness separately.
+
+### Step 1: Detect Accent Issues
+
+Compare the user's answer to the correct answer specifically for accent marks. Examples:
+- "hable" vs "hablé" → accent missing
+- "habló" vs "hablé" → wrong accent (different conjugation — this is a **content error**, not an accent issue)
+- "cafe" vs "café" → accent missing
+
+Only flag as an accent issue when the **base word/form is correct** but the accent is missing or wrong. If the wrong accent changes the meaning (e.g., "habló" = he spoke vs "hablé" = I spoke), that's a content error, not an accent issue.
+
+### Step 2: Notify the User
+
+When an accent issue is detected, tell the user:
+
+> "Your answer is conceptually correct! However, the accent is off: you wrote **'hable'** but it should be **'hablé'**. The accent on the é marks this as pretérito.
+>
+> How would you like this scored?
+> 1. **Full credit** (1.0) — I knew the concept
+> 2. **Partial credit** (0.9) — count it but note the accent
+> 3. **No credit** (0.0) — I need to practice accents"
+
+### Step 3: Record with User's Choice
+
+Use the `--accent-correct` flag and the accuracy the user chose:
+
+```bash
+# User chose partial credit (0.9)
+$STUDY record ... --accuracy 0.9 --accent-correct 0 --type "conjugation"
+
+# User chose full credit (1.0)
+$STUDY record ... --accuracy 1.0 --accent-correct 0 --type "conjugation"
+
+# Perfect answer with correct accents
+$STUDY record ... --accuracy 1.0 --accent-correct 1 --type "conjugation"
+```
+
+**Important**: `--accent-correct 0` means the accent was wrong, `--accent-correct 1` means the accent was correct. Omit the flag entirely if accents are not relevant to the question (e.g., math, history).
+
+---
+
 ## Answer Checking Rules
 
 **CRITICAL: Evaluate answers semantically, NOT with exact string matching.** The goal is to assess whether the student knows the concept, not whether they typed it identically.
 
+**IMPORTANT: Embeddings (`search_similar`) are ONLY used to avoid repeating questions. They are NOT used for accuracy checking.** You (the agent) evaluate accuracy yourself by comparing the user's answer to the correct answer using the rules below.
+
 ### Conjugation
 - Accept with or without subject pronoun: "yo hablé" = "hablé" ✓
 - Case-insensitive: "Hablé" = "hablé" ✓
-- **Accent leniency**: "hable" for "hablé" → mark as **correct** but flag: "Correct! Note: don't forget the accent → habl**é**"
-- Wrong tense or form → **incorrect**, explain the rule and give correct conjugation
+- **Accent issues**: see Accent Handling above — let the user choose credit level
+- Wrong tense or form → accuracy 0.0, explain the rule and give correct conjugation
 
 ### Vocabulary / One-Word
 - Case-insensitive
-- Accept common synonyms ("brief" = "short-lived" = "fleeting" for "ephemeral")
-- Accept singular/plural variations with a note
+- Accept common synonyms → accuracy 1.0
+- Accept singular/plural variations → accuracy 0.9 with a note
 - For translations, accept common alternative translations
+- Partially related answer → accuracy 0.3–0.5
 
 ### Fill in the Blank
 - Only evaluate the **blank portion**, ignore surrounding text
@@ -309,36 +391,38 @@ Once there are **≥10 question records** for the current class:
 ### Math
 - Evaluate mathematical equivalence: 1/2 = 0.5 = 50%
 - Accept equivalent expression forms
-- For multi-step problems, note which steps were correct if the final answer is wrong
+- For multi-step problems: accuracy = correct_steps / total_steps
 
 ### Full Sentence / Short Answer
-- Check for **key concepts/facts** — keep a mental checklist of required points
+- Identify the **key concepts/facts** required in the answer (e.g., 4 key points)
+- accuracy = concepts_present / total_concepts
 - Don't penalize grammar or style differences
-- Note if important details are missing but give partial credit
 - Accept different valid explanations of the same concept
+- Tell the user which points they hit and which they missed
 
 ### True/False
-- Accept: "true"/"false", "t"/"f", "yes"/"no"
-- Evaluate the user's explanation/reasoning, not just the T/F choice
-- If T/F is right but reasoning is wrong, note the issue
+- Wrong T/F choice → accuracy 0.0
+- Correct T/F + good reasoning → accuracy 1.0
+- Correct T/F + weak/missing reasoning → accuracy 0.7
 
 ### Multiple Choice
-- Accept letter (A/B/C/D, case-insensitive) or full option text
+- Correct → accuracy 1.0, wrong → accuracy 0.0
 
 ### Matching / Ordering
-- Accept any clear format (numbered list, arrows, etc.)
-- Evaluate each pair/position individually → partial credit
+- Evaluate each pair/position individually
+- accuracy = correct_items / total_items
 - Note which specific items were wrong
 
 ### Diagram Label
 - Evaluate each label independently
 - Accept common alternative names
-- Case-insensitive, partial credit per label
+- accuracy = correct_labels / total_labels
 
 ### Always
 - **Explain WHY** the answer is correct or incorrect
-- For incorrect answers: provide the correct answer + a brief rule or explanation
-- For accent issues: mark correct but remind about the accent
+- For incorrect or partial answers: provide the correct answer + a brief rule or explanation
+- For accent issues: follow the Accent Handling workflow (let user choose credit level)
+- Show the accuracy you assigned: "Accuracy: **0.75** (3/4 key points)"
 
 ---
 

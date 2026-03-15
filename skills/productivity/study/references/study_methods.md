@@ -34,8 +34,10 @@ This document describes the 10 question types available for study sessions. Each
 **Answer checking:**
 - Accept with or without subject pronoun ("yo hablé" = "hablé")
 - Case-insensitive
-- Accent variations: mark correct but flag the missing accent ("hable" → correct concept, note accent)
-- Wrong tense/form = incorrect, explain the rule and correct conjugation
+- Accent issues: follow the Accent Handling workflow — let user choose credit (1.0, 0.9, or 0.0)
+- Wrong tense/form = accuracy 0.0, explain the rule and correct conjugation
+
+**Accuracy:** 1.0 = correct form + accents. 0.9 = correct form, user chose partial credit for accent. 0.0 = wrong form/tense.
 
 ---
 
@@ -68,10 +70,11 @@ This document describes the 10 question types available for study sessions. Each
 > *Answer should mention: harsh reparations, German resentment, economic instability, rise of nationalism*
 
 **Answer checking:**
-- Check that key concepts/facts are present (keep a mental checklist)
+- Identify key concepts/facts required in the answer (keep a checklist, e.g., 4 key points)
 - Don't penalize grammar or writing style differences
-- Note if important details are missing but don't mark fully incorrect for partial answers
 - Give credit for correct reasoning even if wording differs from source material
+
+**Accuracy:** accuracy = concepts_present / total_concepts. Example: question needs 4 key points, user hits 3 → accuracy = 0.75. Tell user which point they missed.
 
 ---
 
@@ -108,7 +111,8 @@ This document describes the 10 question types available for study sessions. Each
 **Answer checking:**
 - Accept "true"/"false", "t"/"f", "yes"/"no"
 - The user should explain their reasoning — evaluate the explanation quality
-- If user says the right T/F but gives wrong reasoning, note the reasoning issue
+
+**Accuracy:** Wrong T/F = 0.0. Correct T/F + good reasoning = 1.0. Correct T/F + weak/missing reasoning = 0.7.
 
 ---
 
@@ -125,8 +129,9 @@ This document describes the 10 question types available for study sessions. Each
 **Answer checking:**
 - Check for key distinguishing facts
 - Don't require exact wording
-- Partial credit: note which parts were correct and which were missing
 - Accept different valid explanations of the same concept
+
+**Accuracy:** Count key points required (e.g., 3 points). accuracy = points_present / total_points. Example: user mentions mitosis produces identical cells (1 point) and meiosis produces gametes (1 point) but doesn't mention the number of daughter cells → accuracy = 2/3 = 0.67.
 
 ---
 
@@ -146,8 +151,9 @@ This document describes the 10 question types available for study sessions. Each
 
 **Answer checking:**
 - Accept any clear format: "1-B, 2-A, 3-C" or "1B 2A 3C" or numbered list
-- Evaluate each pair individually — give partial credit
-- Score = correct pairs / total pairs
+- Evaluate each pair individually
+
+**Accuracy:** accuracy = correct_pairs / total_pairs. Example: 2/3 correct → accuracy = 0.67.
 
 ---
 
@@ -168,8 +174,9 @@ This document describes the 10 question types available for study sessions. Each
 
 **Answer checking:**
 - Accept letters, numbers, or item text in sequence
-- Evaluate position-by-position — give partial credit
-- If adjacent items are swapped, note the error but acknowledge the rest is correct
+- Evaluate position-by-position
+
+**Accuracy:** accuracy = items_in_correct_position / total_items. Example: 3/4 in right place → accuracy = 0.75.
 
 ---
 
@@ -191,7 +198,8 @@ This document describes the 10 question types available for study sessions. Each
 - Evaluate each label independently
 - Accept common alternative names (cell wall = cell boundary)
 - Case-insensitive
-- Give partial credit for each correct label
+
+**Accuracy:** accuracy = correct_labels / total_labels. Example: 2/3 correct → accuracy = 0.67.
 
 ---
 
@@ -199,6 +207,7 @@ This document describes the 10 question types available for study sessions. Each
 
 1. **Always explain** why an answer is correct or incorrect
 2. **For incorrect answers**, provide the correct answer AND a brief rule/explanation
-3. **Accent leniency**: In language questions, accept missing accents but flag them ("Correct! Note: the accent should be on the é → hablé")
-4. **Partial credit**: For types that have multiple parts (matching, ordering, diagram_label), evaluate each part and give partial credit
+3. **Accent handling**: When accents are wrong but the base answer is correct, notify the user and let them choose: full credit (1.0), partial credit (0.9), or no credit (0.0). Record with `--accent-correct 0`.
+4. **Granular accuracy**: Use 0.0–1.0 scale, not binary correct/incorrect. See SKILL.md "Accuracy Scoring" section for the full scale and per-type calculation rules.
 5. **Don't penalize** formatting differences — focus on content accuracy
+6. **Show your work**: Tell the user the accuracy you assigned and why (e.g., "Accuracy: 0.75 — you got 3 of 4 key points")

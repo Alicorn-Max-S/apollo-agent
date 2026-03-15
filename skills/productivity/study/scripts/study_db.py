@@ -145,7 +145,8 @@ def _init_tables(conn: sqlite3.Connection):
             question_text TEXT NOT NULL,
             correct_answer TEXT NOT NULL,
             user_answer TEXT,
-            is_correct INTEGER NOT NULL,
+            accuracy REAL NOT NULL DEFAULT 0,
+            accent_correct INTEGER,
             question_type TEXT NOT NULL,
             study_file_id INTEGER REFERENCES study_files(id),
             created_at TEXT DEFAULT (datetime('now'))
@@ -162,7 +163,7 @@ def _init_tables(conn: sqlite3.Connection):
             category_id INTEGER NOT NULL REFERENCES categories(id),
             score REAL NOT NULL DEFAULT 0,
             total_attempts INTEGER DEFAULT 0,
-            correct_attempts INTEGER DEFAULT 0,
+            accuracy_sum REAL DEFAULT 0,
             summary TEXT,
             last_updated TEXT DEFAULT (datetime('now')),
             type_fill_in_blank INTEGER DEFAULT 0,
@@ -388,15 +389,20 @@ def cmd_record(args):
         _output({"error": f"Invalid question type '{args.type}'. Valid: {QUESTION_TYPES}"})
         sys.exit(1)
 
+    accuracy = args.accuracy
+    if accuracy < 0.0 or accuracy > 1.0:
+        _output({"error": f"Accuracy must be between 0.0 and 1.0, got {accuracy}"})
+        sys.exit(1)
+
     # Insert question record
     cur = conn.execute(
         """INSERT INTO questions
            (class_id, category_id, question_text, correct_answer, user_answer,
-            is_correct, question_type, study_file_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            accuracy, accent_correct, question_type, study_file_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             class_id, category_id, args.question, args.correct_answer,
-            args.user_answer, args.is_correct, args.type, args.file_id,
+            args.user_answer, accuracy, args.accent_correct, args.type, args.file_id,
         ),
     )
     question_id = cur.lastrowid
@@ -420,19 +426,19 @@ def cmd_record(args):
 
     # Update knowledge_scores with rolling window (last 20)
     last_20 = conn.execute(
-        """SELECT is_correct FROM questions
+        """SELECT accuracy FROM questions
            WHERE class_id = ? AND category_id = ?
            ORDER BY created_at DESC LIMIT 20""",
         (class_id, category_id),
     ).fetchall()
 
-    correct_count = sum(r["is_correct"] for r in last_20)
+    accuracy_sum = sum(r["accuracy"] for r in last_20)
     total_count = len(last_20)
-    score = (correct_count / total_count) * 10 if total_count > 0 else 0
+    score = (accuracy_sum / total_count) * 10 if total_count > 0 else 0
 
-    # Get all-time totals
+    # Get all-time totals (accuracy_sum = sum of accuracy values, e.g. 7.3 out of 10 attempts)
     totals = conn.execute(
-        """SELECT COUNT(*) as total, SUM(is_correct) as correct
+        """SELECT COUNT(*) as total, COALESCE(SUM(accuracy), 0) as correct
            FROM questions WHERE class_id = ? AND category_id = ?""",
         (class_id, category_id),
     ).fetchone()
@@ -449,14 +455,14 @@ def cmd_record(args):
     if existing:
         conn.execute(
             f"""UPDATE knowledge_scores
-                SET score = ?, total_attempts = ?, correct_attempts = ?,
+                SET score = ?, total_attempts = ?, accuracy_sum = ?,
                     {type_col} = {type_col} + 1, last_updated = ?
                 WHERE class_id = ? AND category_id = ?""",
             (score, totals["total"], totals["correct"], now, class_id, category_id),
         )
     else:
         # Build insert with type column set to 1
-        cols = ["class_id", "category_id", "score", "total_attempts", "correct_attempts", "last_updated", type_col]
+        cols = ["class_id", "category_id", "score", "total_attempts", "accuracy_sum", "last_updated", type_col]
         placeholders = ", ".join(["?"] * len(cols))
         conn.execute(
             f"INSERT INTO knowledge_scores ({', '.join(cols)}) VALUES ({placeholders})",
@@ -464,14 +470,17 @@ def cmd_record(args):
         )
 
     conn.commit()
-    _output({
+    result = {
         "success": True,
         "question_id": question_id,
-        "is_correct": args.is_correct,
+        "accuracy": accuracy,
         "score": round(score, 1),
         "total_attempts": totals["total"],
         "embedded": embedding is not None,
-    })
+    }
+    if args.accent_correct is not None:
+        result["accent_correct"] = bool(args.accent_correct)
+    _output(result)
 
 
 # ---------------------------------------------------------------------------
@@ -494,7 +503,7 @@ def cmd_search_similar(args):
         # Load all embeddings for this class/category
         if category_id:
             rows = conn.execute(
-                """SELECT q.id, q.question_text, q.correct_answer, q.is_correct,
+                """SELECT q.id, q.question_text, q.correct_answer, q.accuracy, q.accent_correct,
                           q.question_type, q.created_at, qe.embedding
                    FROM questions q
                    JOIN question_embeddings qe ON q.id = qe.question_id
@@ -503,7 +512,7 @@ def cmd_search_similar(args):
             ).fetchall()
         else:
             rows = conn.execute(
-                """SELECT q.id, q.question_text, q.correct_answer, q.is_correct,
+                """SELECT q.id, q.question_text, q.correct_answer, q.accuracy, q.accent_correct,
                           q.question_type, q.created_at, qe.embedding
                    FROM questions q
                    JOIN question_embeddings qe ON q.id = qe.question_id
@@ -518,7 +527,8 @@ def cmd_search_similar(args):
                 "id": r["id"],
                 "question_text": r["question_text"],
                 "correct_answer": r["correct_answer"],
-                "is_correct": r["is_correct"],
+                "accuracy": r["accuracy"],
+                "accent_correct": r["accent_correct"],
                 "question_type": r["question_type"],
                 "similarity": round(sim, 4),
                 "created_at": r["created_at"],
@@ -530,8 +540,8 @@ def cmd_search_similar(args):
     # Fallback: FTS5 text search
     try:
         fts_rows = conn.execute(
-            """SELECT q.id, q.question_text, q.correct_answer, q.is_correct,
-                      q.question_type, q.created_at,
+            """SELECT q.id, q.question_text, q.correct_answer, q.accuracy,
+                      q.accent_correct, q.question_type, q.created_at,
                       rank
                FROM questions_fts fts
                JOIN questions q ON q.id = fts.rowid
@@ -546,7 +556,8 @@ def cmd_search_similar(args):
                 "id": r["id"],
                 "question_text": r["question_text"],
                 "correct_answer": r["correct_answer"],
-                "is_correct": r["is_correct"],
+                "accuracy": r["accuracy"],
+                "accent_correct": r["accent_correct"],
                 "question_type": r["question_type"],
                 "fts_rank": r["rank"],
                 "created_at": r["created_at"],
@@ -592,7 +603,7 @@ def cmd_get_scores(args):
             "category": r["category_name"],
             "score": round(r["score"], 1),
             "total_attempts": r["total_attempts"],
-            "correct_attempts": r["correct_attempts"],
+            "accuracy_sum": round(r["accuracy_sum"] or 0, 2),
             "summary": r["summary"],
             "last_updated": r["last_updated"],
             "type_distribution": _type_distribution(r),
@@ -621,7 +632,7 @@ def cmd_get_score(args):
         "category": row["category_name"],
         "score": round(row["score"], 1),
         "total_attempts": row["total_attempts"],
-        "correct_attempts": row["correct_attempts"],
+        "accuracy_sum": round(row["accuracy_sum"] or 0, 2),
         "summary": row["summary"],
         "last_updated": row["last_updated"],
         "type_distribution": _type_distribution(row),
@@ -642,13 +653,13 @@ def cmd_get_history(args):
         params.append(category_id)
 
     if args.incorrect_only:
-        where += " AND q.is_correct = 0"
+        where += " AND q.accuracy < 1.0"
 
     params.append(limit)
 
     rows = conn.execute(
         f"""SELECT q.id, q.question_text, q.correct_answer, q.user_answer,
-                   q.is_correct, q.question_type, q.created_at,
+                   q.accuracy, q.accent_correct, q.question_type, q.created_at,
                    cat.name as category_name
             FROM questions q
             LEFT JOIN categories cat ON q.category_id = cat.id
@@ -665,7 +676,7 @@ def cmd_get_weak_areas(args):
     class_id = _require_class(conn, args.class_name)
     rows = conn.execute(
         """SELECT ks.score, cat.name as category, ks.summary,
-                  ks.total_attempts, ks.correct_attempts, ks.last_updated
+                  ks.total_attempts, ks.accuracy_sum, ks.last_updated
            FROM knowledge_scores ks
            JOIN categories cat ON ks.category_id = cat.id
            WHERE ks.class_id = ? AND ks.score < 5
@@ -811,7 +822,8 @@ def main():
     p.add_argument("--question", required=True)
     p.add_argument("--correct-answer", required=True)
     p.add_argument("--user-answer", required=True)
-    p.add_argument("--is-correct", type=int, required=True, choices=[0, 1])
+    p.add_argument("--accuracy", type=float, required=True, help="0.0 (wrong) to 1.0 (perfect)")
+    p.add_argument("--accent-correct", type=int, default=None, choices=[0, 1], help="Accent correctness (null if N/A)")
     p.add_argument("--type", required=True)
     p.add_argument("--file-id", type=int, default=None)
 
