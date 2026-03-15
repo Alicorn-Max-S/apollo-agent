@@ -381,6 +381,31 @@ The response includes `accent_mode` and `spelling_mode`. Apply them:
 - **Spelling error**: A typo or misspelling where the intended word is clear. "concious" for "conscious" ✓
 - **Content error**: A completely different word. "conscious" for "conscience" is NOT a spelling error — it's a wrong answer.
 
+### Session-Level Overrides (Temporary)
+
+A user may want to temporarily change their grading mode for the current session only, without permanently updating the category's stored settings.
+
+**When the user requests a temporary override** (e.g., "count accents as wrong for this session" or "be lenient on spelling today"):
+
+1. **Acknowledge the override** and confirm the temporary scope:
+   > "Got it — I'll use **strict** accent grading for this session only. Your saved setting (lenient) won't change."
+
+2. **Track the override in conversation context only.** Do NOT call `set_grading_mode`. Simply remember the override and apply it when grading each answer for the rest of the session.
+
+3. **Apply the override the same way as a permanent mode** — the grading logic is identical, only the storage differs. Use the overridden mode when calculating accuracy for `$STUDY record`.
+
+4. **The override expires when the conversation ends.** The next session will use the category's stored mode from the database as usual.
+
+**How to handle conflicts:**
+- Session override takes precedence over the stored category mode
+- If the user has a session override active and then asks to make it permanent, THEN call `set_grading_mode` to save it
+- If the category has no stored mode (null) and the user sets a session-only override, still do NOT call `set_grading_mode` — the mode stays null in the database and the next session will trigger the first-time setup again
+
+**Example interaction:**
+> **User:** "Let's study Spanish pretérito, but count accent errors as wrong today."
+> **Agent:** "Starting pretérito practice with strict accent grading for this session. Your permanent setting (partial) won't change."
+> *(Agent grades accent errors as 0.0 for this session, but records still use `--accent-correct 0` so the error is tracked regardless)*
+
 ### Recording with Modes
 
 ```bash
