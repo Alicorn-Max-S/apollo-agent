@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [Study, Flashcards, Quizlet, Education, School, Vocabulary, Review]
-    related_skills: [study, file-analysis, document-analysis, text-analysis, canvas-lms]
+    related_skills: [study, file-analysis, document-analysis, text-analysis, canvas-lms, gmail]
     school: true
     school_category: "Study & Practice"
 ---
@@ -38,9 +38,23 @@ Quizlet's mobile app does not support reliable flashcard importing. Direct the u
 
 ---
 
+## Scripts
+
+```bash
+FLASHCARDS="python ~/.hermes/skills/productivity/quizlet-flashcards/scripts/format_flashcards.py"
+```
+
 ## Procedure
 
-### Step 1: Understand the Source Material
+### Step 1: Get the User's Email (First Time Only)
+
+Check memory for a saved email address. If none is found, ask the user:
+
+> "What email address should I send your Quizlet flashcards to? I'll save it so you don't have to enter it again."
+
+Save the email to the `memory` tool for future use with key like "quizlet_email".
+
+### Step 2: Understand the Source Material
 
 If the user provides a file or document, use file-analysis to extract content:
 ```
@@ -49,56 +63,76 @@ skill_view("file-analysis")
 
 If the user provides a topic or list of terms, work directly from that input.
 
-### Step 2: Confirm Scope
+### Step 3: Confirm Scope
 
 Before generating, clarify:
 - **Subject/topic** — What are the flashcards for?
 - **Number of cards** — How many do they want? (suggest a reasonable amount based on the material)
 - **Language** — If language-related, which language goes on front vs. back?
 
-### Step 3: Generate Flashcards
+### Step 4: Generate and Format Flashcards
 
-Follow all format and content rules below. Output ONLY the flashcards — no headers, no explanations, no markdown formatting around them.
+1. Generate flashcard pairs following all content and format rules below.
+2. Format them as a JSON array of `[front, back]` pairs.
+3. Pipe the JSON into the formatting script to produce a properly tab-separated file:
 
-### Step 4: Offer Supplementary Cards
+```bash
+echo '[["hi","hola"],["goodbye","adiós"],["please","por favor"]]' | $FLASHCARDS /tmp/flashcards.txt
+```
 
-After generating the main set, always ask:
+The script guarantees literal tab characters between front and back on every line. **Never output flashcards as plain text in chat** — tabs are not preserved reliably in chat output.
+
+### Step 5: Email the Flashcards
+
+Use the gmail skill to send the file contents to the user. Load gmail if not already loaded: `skill_view("gmail")`
+
+```bash
+GAPI="python ~/.hermes/skills/productivity/google-auth/scripts/google_api.py"
+
+# Read the file content and send it
+CONTENT=$(cat /tmp/flashcards.txt)
+$GAPI gmail send --to USER_EMAIL --subject "Quizlet Flashcards - TOPIC_NAME" --body "$CONTENT"
+```
+
+Tell the user:
+> "I've emailed your flashcards! Open the email, select all the text, copy it, and paste it into Quizlet's import box."
+
+### Step 6: Offer Supplementary Cards
+
+After sending the main set, always ask:
 
 > "Would you like me to create additional supplementary cards? These would cover related concepts, deeper context, or edge cases to give you a more complete understanding of the topic."
 
-If the user says yes, generate the extra cards in the same format.
+If the user says yes, generate the extra cards using the same process (format script → email).
 
-### Step 5: Provide Import Instructions
+### Step 7: Provide Import Instructions
 
-After the flashcards are generated, remind the user of the import path:
+After emailing, remind the user of the import path:
 
 > **To import into Quizlet (use the web version — mobile import is unreliable):**
-> quizlet.com → **+** → **Flashcard set** → **Import** → paste → **Import** → add title → **Create**
+> 1. Open the email and copy all the flashcard text
+> 2. Go to quizlet.com → **+** → **Flashcard set** → **Import**
+> 3. Paste the text → **Import** → add a title → **Create**
 
 ---
 
 ## Format Requirements
 
-**CRITICAL — Tab Separation:**
-Every flashcard MUST use a single literal tab character (`\t`) between the front and back. Do NOT use spaces, multiple spaces, or any other whitespace — it MUST be a tab. Quizlet import will break if tabs are missing or inconsistent. Double-check every single line before outputting.
-
-- **Never use colons in the output** — use semicolons, dashes, or commas instead
-- Output **only the flashcards** — no introductions, explanations, or closing remarks
+- **Never use colons in the flashcard text** — use semicolons, dashes, or commas instead
 - Each flashcard appears on its **own line**
 - No blank lines between cards
 - No numbering or bullet points
 
-### Output Method
+### Tab Formatting
 
-To guarantee correct tab formatting, write the flashcards to a file using the `write_file` tool. Build the content with literal `\t` tab characters between front and back on each line. Example:
+**Do NOT output flashcards as plain text in chat** — tabs are not preserved reliably in chat output. Always use the `format_flashcards.py` script which guarantees correct literal tab characters between front and back on every line.
 
+Generate your flashcard pairs as a JSON array and pipe it into the script:
+```bash
+echo '[["front1","back1"],["front2","back2"]]' | $FLASHCARDS /tmp/flashcards.txt
 ```
-write_file("flashcards.txt", "hi\thola\ngoodbye\tadiós\nplease\tpor favor\nthank you\tgracias\n")
-```
 
-Then tell the user to open the file, select all, copy, and paste into Quizlet's import box.
-
-**Do NOT output flashcards as plain text in chat** — tabs are not preserved reliably in chat output. Always write to a file.
+The script handles all tab formatting automatically. You only need to provide clean `[front, back]` JSON pairs.
 
 ---
 
@@ -154,10 +188,9 @@ When creating flashcards for language learning:
 
 ## Quality Checklist
 
-Before writing the flashcard file, verify:
-- [ ] Each line uses a literal `\t` tab character between front and back (not spaces)
-- [ ] Flashcards are written to a file, not output as chat text
-- [ ] No colons appear anywhere in the output
+Before sending flashcards, verify:
+- [ ] Flashcards were formatted using the `format_flashcards.py` script (not output as chat text)
+- [ ] No colons appear anywhere in the flashcard text
 - [ ] No introductory or closing text — just the cards
 - [ ] Each card is on its own line with no blank lines between
 - [ ] One concept per card
