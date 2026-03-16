@@ -1650,6 +1650,32 @@ def _get_recent_models(
     return all_recent[:limit]
 
 
+def _get_recent_models_split(
+    provider_model_ids: List[str],
+    limit: int = 5,
+) -> tuple:
+    """Return ``(per_provider, other_providers)`` recently used model lists.
+
+    *per_provider* contains models from the given catalog that have been used
+    recently.  *other_providers* contains recently used models NOT in the
+    catalog (i.e. from other providers).
+
+    Returns ``([], [])`` on any error so callers never need to handle failures.
+    """
+    try:
+        from hermes_state import SessionDB
+        db = SessionDB()
+        all_recent = db.recently_used_models(limit=30)
+        db.close()
+    except Exception:
+        return ([], [])
+
+    provider_set = set(provider_model_ids)
+    per_provider = [m for m in all_recent if m in provider_set][:limit]
+    other = [m for m in all_recent if m not in provider_set][:limit]
+    return (per_provider, other)
+
+
 _MAX_DISPLAY_MODELS = 15
 
 
@@ -1657,6 +1683,7 @@ def _prompt_model_selection(
     model_ids: List[str],
     current_model: str = "",
     provider_recent: Optional[List[str]] = None,
+    global_recent: Optional[List[str]] = None,
     provider_label: str = "",
 ) -> Optional[str]:
     """Interactive model selection with optional 'Recent' and 'All Models' sections.
@@ -1664,6 +1691,11 @@ def _prompt_model_selection(
     When *provider_recent* is provided, shows a "Recent" section at the top
     (up to ~1/3 of the 15-model cap), then an "All Models" section with the
     remaining models in original catalog order.  No duplicates between sections.
+
+    When *global_recent* is provided, shows a "Recent (other providers)"
+    section after the provider's recent models, allowing quick cross-provider
+    switching.
+
     Returns chosen model ID or ``None``.
     """
     # Reorder: current model first, then the rest (deduplicated)
@@ -1681,13 +1713,14 @@ def _prompt_model_selection(
         return mid
 
     # Compute section sizes: ~2:1 ratio (remaining:recent), max 15 total
+    global_to_show = (global_recent or [])[:3]
     if provider_recent:
         max_recent = min(len(provider_recent), _MAX_DISPLAY_MODELS // 3)
-        max_remaining = _MAX_DISPLAY_MODELS - max_recent
+        max_remaining = _MAX_DISPLAY_MODELS - max_recent - len(global_to_show)
         recent_to_show = provider_recent[:max_recent]
     else:
         recent_to_show = []
-        max_remaining = _MAX_DISPLAY_MODELS
+        max_remaining = _MAX_DISPLAY_MODELS - len(global_to_show)
 
     # Build a flat entries list: (display_string, model_id | "__custom__" | "__skip__" | None)
     # None entries are non-selectable section separators.
@@ -1702,10 +1735,17 @@ def _prompt_model_selection(
             entries.append((f"  {_label(mid)}", mid))
             seen.add(mid)
 
-    # Section 2: Remaining models in original order, excluding recent
+    # Section 2: Recent from other providers
+    if global_to_show:
+        entries.append(("  ── Recent (other providers) ──", None))
+        for mid in global_to_show:
+            entries.append((f"  {_label(mid)}", mid))
+            seen.add(mid)
+
+    # Section 3: Remaining models in original order, excluding recent
     remaining = [m for m in ordered if m not in seen][:max_remaining]
     if remaining:
-        if recent_to_show:
+        if recent_to_show or global_to_show:
             entries.append(("  ── All Models ──", None))
         for mid in remaining:
             entries.append((f"  {_label(mid)}", mid))
@@ -2150,9 +2190,10 @@ def _login_nous(args, pconfig: ProviderConfig) -> None:
 
             print()
             if model_ids:
-                provider_recent = _get_recent_models(model_ids, limit=5)
+                provider_recent, global_recent = _get_recent_models_split(model_ids, limit=5)
                 selected_model = _prompt_model_selection(
-                    model_ids, provider_recent=provider_recent, provider_label="Nous Portal")
+                    model_ids, provider_recent=provider_recent, global_recent=global_recent,
+                    provider_label="Nous Portal")
                 if selected_model:
                     _save_model_choice(selected_model)
                     print(f"Default model set to: {selected_model}")

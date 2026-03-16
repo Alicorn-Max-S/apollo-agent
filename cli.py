@@ -2411,14 +2411,15 @@ class HermesCLI:
     def _show_model_and_providers(self):
         """Unified /model and /provider display.
 
-        Shows current model + provider, then lists all authenticated
-        providers with their available models so users can switch easily.
+        Shows current model + provider, recently used models, then lists all
+        authenticated providers with their available models so users can
+        switch easily.
         """
         from hermes_cli.models import (
             curated_models_for_provider, list_available_providers,
             normalize_provider, _PROVIDER_LABELS,
         )
-        from hermes_cli.auth import resolve_provider as _resolve_provider
+        from hermes_cli.auth import resolve_provider as _resolve_provider, _get_recent_models
 
         # Resolve current provider
         raw_provider = normalize_provider(self.provider)
@@ -2437,6 +2438,15 @@ class HermesCLI:
 
         print(f"\n  Current: {self.model} via {current_label}")
         print()
+
+        # Show recently used models (global, across all providers)
+        recent = _get_recent_models(limit=5)
+        if recent:
+            print("  Recently used:")
+            for mid in recent:
+                marker = " ← current" if mid == self.model else ""
+                print(f"    {mid}{marker}")
+            print()
 
         # Show all authenticated providers with their models
         providers = list_available_providers()
