@@ -11,7 +11,7 @@
   <a href="https://github.com/Alicorn-Max-S"><img src="https://img.shields.io/badge/Built%20by-Alicorn--Max--S-blueviolet?style=for-the-badge" alt="Built by Alicorn-Max-S"></a>
 </p>
 
-> *This is a fork of [Apollo Agent](https://github.com/NousResearch/apollo-agent) originally created by [Nous Research](https://nousresearch.com).*
+> *This is a fork of [Hermes Agent](https://github.com/NousResearch/hermes-agent) originally created by [Nous Research](https://nousresearch.com).*
 
 **The AI agent for learning, built by [Alicorn-Max-S](https://github.com/Alicorn-Max-S).** Apollo helps students stay on top of homework, study smarter, manage deadlines, and research faster. It connects to Canvas LMS, Google Workspace, Todoist, and Notion — then learns your classes, schedule, and study habits so it can adapt to how you work. Built-in study sessions with spaced repetition, flashcard generation, assignment tracking, and 40+ tools for everything from reading PDFs to creating presentations.
 
