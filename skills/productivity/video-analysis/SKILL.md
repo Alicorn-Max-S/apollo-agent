@@ -2,7 +2,7 @@
 name: video-analysis
 description: Analyze video files by extracting metadata, keyframes, and audio. Cost-optimized — uses local ffmpeg/ffprobe (FREE) and minimal keyframes. Supports direct video input for omni models.
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

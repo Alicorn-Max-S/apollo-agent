@@ -2,7 +2,7 @@
 name: image-analysis
 description: Analyze images using AI vision models. Supports PNG, JPG, GIF, BMP, WebP, SVG, TIFF, HEIC, AVIF, and more. Converts exotic formats automatically. Falls back to alternative models if vision fails.
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

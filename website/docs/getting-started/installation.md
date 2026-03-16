@@ -13,7 +13,7 @@ Get Apollo Agent up and running in under two minutes with the one-line installer
 ### Linux / macOS / WSL2
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash
 ```
 
 :::warning Windows
@@ -70,7 +70,7 @@ If you prefer full control over the installation process, follow these steps.
 Clone with `--recurse-submodules` to pull the required submodules:
 
 ```bash
-git clone --recurse-submodules https://github.com/NousResearch/apollo-agent.git
+git clone --recurse-submodules https://github.com/Alicorn-Max-S/apollo-agent.git
 cd apollo-agent
 ```
 
@@ -228,7 +228,7 @@ For those who just want the commands:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone & enter
-git clone --recurse-submodules https://github.com/NousResearch/apollo-agent.git
+git clone --recurse-submodules https://github.com/Alicorn-Max-S/apollo-agent.git
 cd apollo-agent
 
 # Create venv with Python 3.11

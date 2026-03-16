@@ -2,7 +2,7 @@
 name: text-analysis
 description: Analyze text and structured data files — TXT, CSV, JSON, XML, YAML, HTML, LOG, Markdown, config files, and notebooks. Free local reading with format-aware analysis.
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

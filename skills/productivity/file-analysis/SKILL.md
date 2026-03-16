@@ -2,7 +2,7 @@
 name: file-analysis
 description: "Analyze any file by auto-detecting its type and routing to the right analysis skill. Supports PDFs, images, spreadsheets, code, audio, video, text, and more. Trigger when the user uploads a file, shares a file path, or asks to analyze, read, parse, or extract content from any file."
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

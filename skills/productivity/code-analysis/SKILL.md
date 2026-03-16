@@ -2,7 +2,7 @@
 name: code-analysis
 description: Read and analyze source code files. Supports all major programming languages. Provides structure overview, logic explanation, bug identification, and quality review.
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

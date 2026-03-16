@@ -2,7 +2,7 @@
 name: openclaw-migration
 description: Migrate a user's OpenClaw customization footprint into Apollo Agent. Imports Apollo-compatible memories, SOUL.md, command allowlists, user skills, and selected workspace assets from ~/.openclaw, then reports exactly what could not be migrated and why.
 version: 1.0.0
-author: Apollo Agent (Nous Research)
+author: Apollo Agent (Alicorn-Max-S)
 license: MIT
 metadata:
   apollo:

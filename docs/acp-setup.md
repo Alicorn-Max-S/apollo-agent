@@ -225,5 +225,5 @@ APOLLO_LOG_LEVEL=DEBUG apollo acp
 ## Further Reading
 
 - [ACP Specification](https://github.com/anysphere/acp)
-- [Apollo Agent Documentation](https://github.com/NousResearch/apollo-agent)
+- [Apollo Agent Documentation](https://github.com/Alicorn-Max-S/apollo-agent)
 - Run `apollo --help` for all CLI options

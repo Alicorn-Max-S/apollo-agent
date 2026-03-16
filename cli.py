@@ -867,7 +867,7 @@ APOLLO_LYRE = """[#FEE66E]⠀⠀⠀⠀⠀⠀⢀⣀⣀⡀⠀⠀⠀⡀⣀⣀⡀⠀
 COMPACT_BANNER = """
 [bold #FEE66E]╔══════════════════════════════════════════════════════════════╗[/]
 [bold #FEE66E]║[/]  [#E88A5A]☀ APOLLO[/] [dim #7D796E]- AI Learning Agent[/]                    [bold #FEE66E]║[/]
-[bold #FEE66E]║[/]  [#4A4E6F]Illuminating the path to knowledge[/] [dim #7D796E]Nous Research[/] [bold #FEE66E]║[/]
+[bold #FEE66E]║[/]  [#4A4E6F]Illuminating the path to knowledge[/] [dim #7D796E]Alicorn-Max-S[/] [bold #FEE66E]║[/]
 [bold #FEE66E]╚══════════════════════════════════════════════════════════════╝[/]
 """
 
@@ -876,11 +876,11 @@ def _build_compact_banner() -> str:
     """Build a compact banner that fits the current terminal width."""
     w = min(shutil.get_terminal_size().columns - 2, 64)
     if w < 30:
-        return "\n[#E88A5A]☀ APOLLO[/] [dim #7D796E]- Nous Research[/]\n"
+        return "\n[#E88A5A]☀ APOLLO[/] [dim #7D796E]- Alicorn-Max-S[/]\n"
     inner = w - 2  # inside the box border
     bar = "═" * w
     line1 = "☀ APOLLO - AI Learning Agent"
-    line2 = "Illuminating the path to knowledge  ·  Nous Research"
+    line2 = "Illuminating the path to knowledge  ·  Alicorn-Max-S"
     # Truncate and pad to fit
     line1 = line1[:inner - 2].ljust(inner - 2)
     line2 = line2[:inner - 2].ljust(inner - 2)
@@ -1017,7 +1017,7 @@ def build_welcome_banner(console: Console, model: str, cwd: str, tools: List[dic
         model_short = model_short[:25] + "..."
     
     ctx_str = f" [dim {_dim}]·[/] [dim {_dim}]{_format_context_length(context_length)} context[/]" if context_length else ""
-    left_lines.append(f"[{_accent}]{model_short}[/]{ctx_str} [dim {_dim}]·[/] [dim {_dim}]Nous Research[/]")
+    left_lines.append(f"[{_accent}]{model_short}[/]{ctx_str} [dim {_dim}]·[/] [dim {_dim}]Alicorn-Max-S[/]")
     left_lines.append(f"[dim {_dim}]{cwd}[/]")
     
     # Add session ID if provided

@@ -2,12 +2,12 @@
 name: gmail
 description: "Gmail email management — search, read, compose, send, reply, forward, and organize with labels and filters. Uses Google OAuth2. Trigger on mentions of email, inbox, sending messages, Gmail, or composing a message to someone."
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:
     tags: [Gmail, Email, Google]
-    homepage: https://github.com/NousResearch/apollo-agent
+    homepage: https://github.com/Alicorn-Max-S/apollo-agent
     related_skills: [google-auth, himalaya]
     school: true
     school_category: "Google Workspace"

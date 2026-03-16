@@ -19,7 +19,7 @@ _OUTPUT_FENCE = "__APOLLO_FENCE_a9f7b3__"
 # Apollo-internal env vars that should NOT leak into terminal subprocesses.
 # These are loaded from ~/.apollo/.env for Apollo' own LLM/provider calls
 # but can break external CLIs (e.g. codex) that also honor them.
-# See: https://github.com/NousResearch/apollo-agent/issues/1002
+# See: https://github.com/Alicorn-Max-S/apollo-agent/issues/1002
 #
 # Built dynamically from the provider registry so new providers are
 # automatically covered without manual blocklist maintenance.

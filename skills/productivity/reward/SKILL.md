@@ -2,7 +2,7 @@
 name: reward
 description: "Track and log rewards for completing school tasks. Trigger when user says they completed a task, want to create a task, or mentions rewarding themselves. Logs rewards to Google Sheets and predicts future rewards after enough history."
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

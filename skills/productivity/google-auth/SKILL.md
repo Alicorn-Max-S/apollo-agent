@@ -2,12 +2,12 @@
 name: google-auth
 description: Shared OAuth2 setup for all Google services (Gmail, Calendar, Drive, Sheets, Docs, Contacts). Run this once to authorize, then use individual Google skills.
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:
     tags: [Google, OAuth, Auth, Setup]
-    homepage: https://github.com/NousResearch/apollo-agent
+    homepage: https://github.com/Alicorn-Max-S/apollo-agent
     related_skills: [google-calendar, gmail, google-drive, google-drive-write, google-contacts]
     school: true
     school_category: "Google Workspace"

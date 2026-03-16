@@ -7,7 +7,7 @@ license: MIT
 metadata:
   apollo:
     tags: [Agent, Apollo, Multi-Agent, Orchestration, Subprocess, Interactive]
-    homepage: https://github.com/NousResearch/apollo-agent
+    homepage: https://github.com/Alicorn-Max-S/apollo-agent
     related_skills: [claude-code, codex]
     school: true
     school_category: "Coding & Projects"
@@ -39,10 +39,10 @@ Run additional Apollo Agent processes as autonomous subprocesses. Unlike `delega
 Requires an interactive shell (the installer runs a setup wizard):
 
 ```
-curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash
 ```
 
-This installs uv, Python 3.11, clones the repo, sets up the venv, and launches an interactive setup wizard to configure your API provider and model. See the [GitHub repo](https://github.com/NousResearch/apollo-agent) for details.
+This installs uv, Python 3.11, clones the repo, sets up the venv, and launches an interactive setup wizard to configure your API provider and model. See the [GitHub repo](https://github.com/Alicorn-Max-S/apollo-agent) for details.
 
 ## Resuming Previous Sessions
 

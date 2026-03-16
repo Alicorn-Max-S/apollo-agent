@@ -7,11 +7,13 @@
 <p align="center">
   <a href="https://apollo-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-apollo--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/NousResearch/apollo-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
-  <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Nous Research"></a>
+  <a href="https://github.com/Alicorn-Max-S/apollo-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://github.com/Alicorn-Max-S"><img src="https://img.shields.io/badge/Built%20by-Alicorn--Max--S-blueviolet?style=for-the-badge" alt="Built by Alicorn-Max-S"></a>
 </p>
 
-**The AI agent for learning, built by [Nous Research](https://nousresearch.com).** Apollo helps students stay on top of homework, study smarter, manage deadlines, and research faster. It connects to Canvas LMS, Google Workspace, Todoist, and Notion — then learns your classes, schedule, and study habits so it can adapt to how you work. Built-in study sessions with spaced repetition, flashcard generation, assignment tracking, and 40+ tools for everything from reading PDFs to creating presentations.
+> *This is a fork of [Apollo Agent](https://github.com/NousResearch/apollo-agent) originally created by [Nous Research](https://nousresearch.com).*
+
+**The AI agent for learning, built by [Alicorn-Max-S](https://github.com/Alicorn-Max-S).** Apollo helps students stay on top of homework, study smarter, manage deadlines, and research faster. It connects to Canvas LMS, Google Workspace, Todoist, and Notion — then learns your classes, schedule, and study habits so it can adapt to how you work. Built-in study sessions with spaced repetition, flashcard generation, assignment tracking, and 40+ tools for everything from reading PDFs to creating presentations.
 
 Use any AI model — [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai) (200+ models), OpenAI, or your own endpoint. Switch anytime with `apollo model`.
 
@@ -45,7 +47,7 @@ sudo apt update && sudo apt install git
 **2. Run the Apollo installer:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash
 ```
 
 This downloads and installs everything Apollo needs: the `uv` Python package manager, Python 3.11, Node.js 22, ripgrep (for fast file search), and ffmpeg (for voice messages). Most of it does not require sudo.
@@ -73,7 +75,7 @@ sudo dnf install git
 **2. Run the Apollo installer:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash
 ```
 
 **3. Reload your terminal and start Apollo:**
@@ -97,7 +99,7 @@ sudo pacman -S git
 **2. Run the Apollo installer:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash
 ```
 
 **3. Reload your terminal and start Apollo:**
@@ -122,7 +124,7 @@ This installs Apple's command-line developer tools, which include Git. A popup w
 **2. Run the Apollo installer:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash
 ```
 
 The installer uses Homebrew for system packages (ripgrep, ffmpeg) if available. If you don't have Homebrew, the installer will still work — it just skips those optional extras.
@@ -159,7 +161,7 @@ This installs WSL2 with Ubuntu by default. Your computer will need to restart.
 
 ```bash
 sudo apt update && sudo apt install git
-curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash
 ```
 
 **4. Reload your terminal and start Apollo:**
@@ -181,7 +183,7 @@ From now on, open the Ubuntu app from your Start menu whenever you want to use A
 If you prefer to stay in Windows without WSL2, you can use the PowerShell installer. Open **PowerShell** and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.ps1 | iex
 ```
 
 This installer uses winget, Chocolatey, or Scoop to install Node.js and other dependencies. It downloads uv and Python 3.11 automatically.
@@ -326,7 +328,7 @@ We welcome contributions! See the [Contributing Guide](https://apollo-agent.nous
 Quick start for contributors:
 
 ```bash
-git clone https://github.com/NousResearch/apollo-agent.git
+git clone https://github.com/Alicorn-Max-S/apollo-agent.git
 cd apollo-agent
 git submodule update --init mini-swe-agent   # required terminal backend
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -349,8 +351,8 @@ python -m pytest tests/ -q
 
 - 💬 [Discord](https://discord.gg/NousResearch)
 - 📚 [Skills Hub](https://agentskills.io)
-- 🐛 [Issues](https://github.com/NousResearch/apollo-agent/issues)
-- 💡 [Discussions](https://github.com/NousResearch/apollo-agent/discussions)
+- 🐛 [Issues](https://github.com/Alicorn-Max-S/apollo-agent/issues)
+- 💡 [Discussions](https://github.com/Alicorn-Max-S/apollo-agent/discussions)
 
 ---
 
@@ -358,4 +360,4 @@ python -m pytest tests/ -q
 
 MIT — see [LICENSE](LICENSE).
 
-Built by [Nous Research](https://nousresearch.com).
+Built by [Alicorn-Max-S](https://nousresearch.com).

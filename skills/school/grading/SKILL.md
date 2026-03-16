@@ -2,7 +2,7 @@
 name: grading
 description: "Grade student work against a rubric. Upload your assignment and rubric (as files, images, or pasted text) and receive detailed feedback with a score breakdown per rubric criterion."
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:
