@@ -2,7 +2,7 @@
 name: audio-analysis
 description: Transcribe and analyze audio files using local faster-whisper (FREE). Supports MP3, WAV, OGG, FLAC, M4A, and more. Converts unsupported formats via ffmpeg. Vision AI fallback for omni models.
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

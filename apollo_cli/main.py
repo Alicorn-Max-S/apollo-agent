@@ -773,7 +773,7 @@ def cmd_model(args):
     # Step 1: Provider selection — put active provider first with marker
     providers = [
         ("openrouter", "OpenRouter (100+ models, pay-per-use)"),
-        ("nous", "Nous Portal (Nous Research subscription)"),
+        ("nous", "Nous Portal (Alicorn-Max-S subscription)"),
         ("openai-codex", "OpenAI Codex"),
         ("anthropic", "Anthropic (Claude models — API key or Claude Code)"),
         ("zai", "Z.AI / GLM (Zhipu AI direct API)"),
@@ -1911,7 +1911,7 @@ def _update_via_zip(args):
     from urllib.request import urlretrieve
     
     branch = "main"
-    zip_url = f"https://github.com/NousResearch/apollo-agent/archive/refs/heads/{branch}.zip"
+    zip_url = f"https://github.com/Alicorn-Max-S/apollo-agent/archive/refs/heads/{branch}.zip"
     
     print("→ Downloading latest version...")
     try:
@@ -2086,7 +2086,7 @@ def cmd_update(args):
             use_zip_update = True
         else:
             print("✗ Not a git repository. Please reinstall:")
-            print("  curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash")
+            print("  curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash")
             sys.exit(1)
     
     # On Windows, git can fail with "unable to write loose object file: Invalid argument"

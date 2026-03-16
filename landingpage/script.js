@@ -6,7 +6,7 @@
 const PLATFORMS = {
   linux: {
     command:
-      "curl -fsSL https://raw.githubusercontent.com/NousResearch/apollo-agent/main/scripts/install.sh | bash",
+      "curl -fsSL https://raw.githubusercontent.com/Alicorn-Max-S/apollo-agent/main/scripts/install.sh | bash",
     prompt: "$",
     note: "Works on Linux, macOS & WSL2 · No prerequisites · Installs everything automatically",
     stepNote:

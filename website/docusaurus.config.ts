@@ -47,7 +47,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',  // Docs at the root of /docs/
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/NousResearch/apollo-agent/edit/main/website/',
+          editUrl: 'https://github.com/Alicorn-Max-S/apollo-agent/edit/main/website/',
         },
         blog: false,
         theme: {
@@ -82,7 +82,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://github.com/NousResearch/apollo-agent',
+          href: 'https://github.com/Alicorn-Max-S/apollo-agent',
           label: 'GitHub',
           position: 'right',
         },
@@ -109,19 +109,19 @@ const config: Config = {
           title: 'Community',
           items: [
             { label: 'Discord', href: 'https://discord.gg/NousResearch' },
-            { label: 'GitHub Discussions', href: 'https://github.com/NousResearch/apollo-agent/discussions' },
+            { label: 'GitHub Discussions', href: 'https://github.com/Alicorn-Max-S/apollo-agent/discussions' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
         },
         {
           title: 'More',
           items: [
-            { label: 'GitHub', href: 'https://github.com/NousResearch/apollo-agent' },
-            { label: 'Nous Research', href: 'https://nousresearch.com' },
+            { label: 'GitHub', href: 'https://github.com/Alicorn-Max-S/apollo-agent' },
+            { label: 'Alicorn-Max-S', href: 'https://nousresearch.com' },
           ],
         },
       ],
-      copyright: `Built by <a href="https://nousresearch.com">Nous Research</a> · MIT License · ${new Date().getFullYear()}`,
+      copyright: `Built by <a href="https://nousresearch.com">Alicorn-Max-S</a> · MIT License · ${new Date().getFullYear()}`,
     },
     prism: {
       theme: prismThemes.github,

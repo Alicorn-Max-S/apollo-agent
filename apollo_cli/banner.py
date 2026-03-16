@@ -88,7 +88,7 @@ APOLLO_LYRE = """[#FEE66E]⠀⠀⠀⠀⠀⠀⢀⣀⣀⡀⠀⠀⠀⡀⣀⣀⡀⠀
 COMPACT_BANNER = """
 [bold #FEE66E]╔══════════════════════════════════════════════════════════════╗[/]
 [bold #FEE66E]║[/]  [#E88A5A]☀ APOLLO[/] [dim #7D796E]- AI Learning Agent[/]                    [bold #FEE66E]║[/]
-[bold #FEE66E]║[/]  [#4A4E6F]Illuminating the path to knowledge[/] [dim #7D796E]Nous Research[/] [bold #FEE66E]║[/]
+[bold #FEE66E]║[/]  [#4A4E6F]Illuminating the path to knowledge[/] [dim #7D796E]Alicorn-Max-S[/] [bold #FEE66E]║[/]
 [bold #FEE66E]╚══════════════════════════════════════════════════════════════╝[/]
 """
 
@@ -278,7 +278,7 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
     if len(model_short) > 28:
         model_short = model_short[:25] + "..."
     ctx_str = f" [dim {dim}]·[/] [dim {dim}]{_format_context_length(context_length)} context[/]" if context_length else ""
-    left_lines.append(f"[{accent}]{model_short}[/]{ctx_str} [dim {dim}]·[/] [dim {dim}]Nous Research[/]")
+    left_lines.append(f"[{accent}]{model_short}[/]{ctx_str} [dim {dim}]·[/] [dim {dim}]Alicorn-Max-S[/]")
     left_lines.append(f"[dim {dim}]{cwd}[/]")
     if session_id:
         left_lines.append(f"[dim {session_color}]Session: {session_id}[/]")

@@ -2,12 +2,12 @@
 name: google-drive
 description: "Read and search Google Drive — open Docs, Sheets, Slides, and PDFs. Supports OAuth2 and browser-based SSO for school and enterprise accounts. Trigger on mentions of Google Drive, shared docs, class folders, or retrieving files from Drive. Read-only — use google-drive-write for edits."
 version: 1.2.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:
     tags: [Google, Drive, Docs, Sheets, School, SSO, Education]
-    homepage: https://github.com/NousResearch/apollo-agent
+    homepage: https://github.com/Alicorn-Max-S/apollo-agent
     related_skills: [google-auth, google-drive-write]
     school: true
     school_category: "Google Workspace"

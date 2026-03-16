@@ -45,7 +45,7 @@ Bundled skills (in `skills/`) ship with every Apollo install. They should be **b
 
 If your skill is official and useful but not universally needed (e.g., a paid service integration, a heavyweight dependency), put it in **`optional-skills/`** — it ships with the repo but isn't activated by default. Users can discover it via `apollo skills browse` (labeled "official") and install it with `apollo skills install` (no third-party warning, builtin trust).
 
-If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** — upload it to a skills registry and share it in the [Nous Research Discord](https://discord.gg/NousResearch). Users can install it with `apollo skills install`.
+If your skill is specialized, community-contributed, or niche, it's better suited for a **Skills Hub** — upload it to a skills registry and share it in the [Alicorn-Max-S Discord](https://discord.gg/NousResearch). Users can install it with `apollo skills install`.
 
 ---
 
@@ -63,7 +63,7 @@ If your skill is specialized, community-contributed, or niche, it's better suite
 ### Clone and install
 
 ```bash
-git clone --recurse-submodules https://github.com/NousResearch/apollo-agent.git
+git clone --recurse-submodules https://github.com/Alicorn-Max-S/apollo-agent.git
 cd apollo-agent
 
 # Create venv with Python 3.11
@@ -638,7 +638,7 @@ test(tools): add unit tests for file_operations
 
 ## Reporting Issues
 
-- Use [GitHub Issues](https://github.com/NousResearch/apollo-agent/issues)
+- Use [GitHub Issues](https://github.com/Alicorn-Max-S/apollo-agent/issues)
 - Include: OS, Python version, Apollo version (`apollo version`), full error traceback
 - Include steps to reproduce
 - Check existing issues before creating duplicates

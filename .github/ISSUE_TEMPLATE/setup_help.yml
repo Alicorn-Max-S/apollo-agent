@@ -11,8 +11,8 @@ body:
         **Quick checks first:**
         - Run `apollo doctor` and include the output below
         - Try `apollo update` to get the latest version
-        - Check the [README troubleshooting section](https://github.com/NousResearch/apollo-agent#troubleshooting)
-        - For general questions, consider the [Nous Research Discord](https://discord.gg/NousResearch) for faster help
+        - Check the [README troubleshooting section](https://github.com/Alicorn-Max-S/apollo-agent#troubleshooting)
+        - For general questions, consider the [Alicorn-Max-S Discord](https://discord.gg/NousResearch) for faster help
 
   - type: textarea
     id: description

@@ -2,7 +2,7 @@
 name: document-analysis
 description: "Extract and analyze content from documents — PDF, DOCX, XLSX, PPTX, CSV, and more. Uses free local tools (pymupdf, python-docx, openpyxl, python-pptx) with vision AI fallback. Trigger on mentions of reading documents, parsing PDFs, extracting tables, or analyzing uploaded files."
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:

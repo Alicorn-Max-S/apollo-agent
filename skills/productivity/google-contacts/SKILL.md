@@ -2,12 +2,12 @@
 name: google-contacts
 description: List Google Contacts — names, emails, and phone numbers. Uses Google OAuth2 via the google-auth skill.
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:
     tags: [Google, Contacts, People]
-    homepage: https://github.com/NousResearch/apollo-agent
+    homepage: https://github.com/Alicorn-Max-S/apollo-agent
     related_skills: [google-auth, gmail]
     school: true
     school_category: "Google Workspace"

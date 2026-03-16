@@ -2,12 +2,12 @@
 name: google-drive-write
 description: "Write and edit Google Drive content — update Google Sheets cells, append rows, create documents, and modify Drive files. Uses Google OAuth2. Trigger on mentions of editing spreadsheets, updating shared docs, writing to Google Sheets, or saving to Drive."
 version: 1.0.0
-author: Nous Research
+author: Alicorn-Max-S
 license: MIT
 metadata:
   apollo:
     tags: [Google, Drive, Sheets, Docs, Write, Edit]
-    homepage: https://github.com/NousResearch/apollo-agent
+    homepage: https://github.com/Alicorn-Max-S/apollo-agent
     related_skills: [google-auth, google-drive]
     school: true
     school_category: "Google Workspace"
