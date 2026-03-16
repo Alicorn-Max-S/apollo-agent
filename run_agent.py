@@ -82,6 +82,7 @@ from agent.prompt_builder import (
     DEFAULT_AGENT_IDENTITY, PLATFORM_HINTS,
     MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE,
     TOOL_SELECTION_GUIDE, SCHOOL_SKILLS_SUMMARY,
+    build_school_onboarding_context,
 )
 from agent.model_metadata import (
     fetch_model_metadata, get_model_context_length,
@@ -1891,6 +1892,12 @@ class AIAgent:
         if skills_prompt:
             prompt_parts.append(skills_prompt)
             prompt_parts.append(SCHOOL_SKILLS_SUMMARY)
+
+        # Inject school onboarding context so the agent knows which
+        # services the user set up and how to adapt when something is missing.
+        school_ctx = build_school_onboarding_context()
+        if school_ctx:
+            prompt_parts.append(school_ctx)
 
         if not self.skip_context_files:
             context_files_prompt = build_context_files_prompt()
