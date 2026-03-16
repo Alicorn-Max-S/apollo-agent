@@ -527,7 +527,7 @@ def cmd_whatsapp(args):
     from apollo_cli.config import get_env_value, save_env_value
 
     print()
-    print("⚕ WhatsApp Setup")
+    print("☀ WhatsApp Setup")
     print("=" * 50)
 
     # ── Step 1: Choose mode ──────────────────────────────────────────────
@@ -2073,7 +2073,7 @@ def cmd_update(args):
     """Update Apollo Agent to the latest version."""
     import shutil
     
-    print("⚕ Updating Apollo Agent...")
+    print("☀ Updating Apollo...")
     print()
     
     # Try git-based update first, fall back to ZIP download on Windows

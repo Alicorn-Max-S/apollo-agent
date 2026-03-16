@@ -420,7 +420,7 @@ from model_tools import get_tool_definitions, get_toolset_for_tool
 # Extracted CLI modules (Phase 3)
 from apollo_cli.banner import (
     cprint as _cprint, _GOLD, _BOLD, _DIM, _RST,
-    VERSION, RELEASE_DATE, APOLLO_AGENT_LOGO, APOLLO_CADUCEUS, COMPACT_BANNER,
+    VERSION, RELEASE_DATE, APOLLO_AGENT_LOGO, APOLLO_LYRE, COMPACT_BANNER,
     get_available_skills as _get_available_skills,
     build_welcome_banner,
 )
@@ -688,11 +688,11 @@ def _prune_stale_worktrees(repo_root: str, max_age_hours: int = 24) -> None:
 # ============================================================================
 
 # Color palette (hex colors for Rich markup):
-# - Gold: #FFD700 (headers, highlights)
-# - Amber: #FFBF00 (secondary highlights)
-# - Bronze: #CD7F32 (tertiary elements)
-# - Light: #FFF8DC (text)
-# - Dim: #B8860B (muted text)
+# - Gold: #FEE66E (headers, highlights)
+# - Coral: #E88A5A (accent, secondary highlights)
+# - Indigo: #4A4E6F (tertiary elements)
+# - Cream: #FFF2CC (text)
+# - Dim: #7D796E (muted text)
 
 # ANSI building blocks for conversation display
 _GOLD = "\033[1;33m"    # Bold yellow — closest universal match to the gold theme
@@ -704,9 +704,9 @@ def _accent_hex() -> str:
     """Return the active skin accent color for legacy CLI output lines."""
     try:
         from apollo_cli.skin_engine import get_active_skin
-        return get_active_skin().get_color("ui_accent", "#FFBF00")
+        return get_active_skin().get_color("ui_accent", "#E88A5A")
     except Exception:
-        return "#FFBF00"
+        return "#E88A5A"
 
 
 def _rich_text_from_ansi(text: str) -> _RichText:
@@ -757,38 +757,36 @@ class ChatConsole:
         for line in output.rstrip("\n").split("\n"):
             _cprint(line)
 
-# ASCII Art - APOLLO-AGENT logo (full width, single line - requires ~95 char terminal)
-APOLLO_AGENT_LOGO = """[bold #FFD700]██╗  ██╗███████╗██████╗ ███╗   ███╗███████╗███████╗       █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
-[bold #FFD700]██║  ██║██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝      ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
-[#FFBF00]███████║█████╗  ██████╔╝██╔████╔██║█████╗  ███████╗█████╗███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]
-[#FFBF00]██╔══██║██╔══╝  ██╔══██╗██║╚██╔╝██║██╔══╝  ╚════██║╚════╝██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]
-[#CD7F32]██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
-[#CD7F32]╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]"""
+# ASCII Art - APOLLO logo (full width)
+APOLLO_AGENT_LOGO = """[bold #FEE66E] █████╗ ██████╗  ██████╗ ██╗     ██╗      ██████╗ [/]
+[bold #FEE66E]██╔══██╗██╔══██╗██╔═══██╗██║     ██║     ██╔═══██╗[/]
+[#E88A5A]███████║██████╔╝██║   ██║██║     ██║     ██║   ██║[/]
+[#E88A5A]██╔══██║██╔═══╝ ██║   ██║██║     ██║     ██║   ██║[/]
+[#4A4E6F]██║  ██║██║     ╚██████╔╝███████╗███████╗╚██████╔╝[/]
+[#4A4E6F]╚═╝  ╚═╝╚═╝      ╚═════╝ ╚══════╝╚══════╝ ╚═════╝ [/]"""
 
-# ASCII Art - Apollo Caduceus (compact, fits in left panel)
-APOLLO_CADUCEUS = """[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀[/]
-[#FFBF00]⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
+# ASCII Art - Apollo Lyre (compact, fits in left panel)
+APOLLO_LYRE = """[#FEE66E]⠀⠀⠀⠀⠀⠀⢀⣀⣀⡀⠀⠀⠀⡀⣀⣀⡀⠀⠀⠀⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠀⢀⣾⠟⠉⠉⠛⠂⠀⠐⠛⠉⠉⠻⣷⡀⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⠀⣾⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣷⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠘⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⠃⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠀⠈⠻⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⠟⠁⠀⠀⠀⠀[/]
+[#7D796E]⠀⠀⠀⠀⠀⠀⢈⣹⣷⡄⠀⠀⠀⠀⢠⣾⣏⡁⠀⠀⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⠀⠀⠀⣿⠁⠈⡇⠀⠀⠀⠀⢸⠁⠈⣿⠀⠀⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⠀⠀⠀⣿⠀⠀⡇⠀⠀⠀⠀⢸⠀⠀⣿⠀⠀⠀⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠀⠀⠀⣿⡀⢀⡇⠀⠀⠀⠀⢸⡀⠀⣿⠀⠀⠀⠀⠀⠀[/]
+[#7D796E]⠀⠀⠀⠀⠀⠀⠘⠛⠛⠃⠀⠀⠀⠀⠘⠛⠛⠃⠀⠀⠀⠀⠀⠀[/]
+[#4A4E6F]⠀⠀⠀⠀⠀━━━━━━━━━━━━━━━━━⠀⠀⠀⠀⠀[/]
+[dim #7D796E]⠀⠀⠀⠀⠀⠀⠀illuminating knowledge⠀⠀⠀⠀⠀⠀⠀[/]"""
 
 # Compact banner for smaller terminals (fallback)
 # Note: built dynamically by _build_compact_banner() to fit terminal width
 COMPACT_BANNER = """
-[bold #FFD700]╔══════════════════════════════════════════════════════════════╗[/]
-[bold #FFD700]║[/]  [#FFBF00]APOLLO AGENT[/] [dim #B8860B]- AI Agent Framework[/]               [bold #FFD700]║[/]
-[bold #FFD700]║[/]  [#CD7F32]Messenger of the Digital Gods[/]    [dim #B8860B]Nous Research[/]   [bold #FFD700]║[/]
-[bold #FFD700]╚══════════════════════════════════════════════════════════════╝[/]
+[bold #FEE66E]╔══════════════════════════════════════════════════════════════╗[/]
+[bold #FEE66E]║[/]  [#E88A5A]☀ APOLLO[/] [dim #7D796E]- AI Learning Agent[/]                    [bold #FEE66E]║[/]
+[bold #FEE66E]║[/]  [#4A4E6F]Illuminating the path to knowledge[/] [dim #7D796E]Nous Research[/] [bold #FEE66E]║[/]
+[bold #FEE66E]╚══════════════════════════════════════════════════════════════╝[/]
 """
 
 
@@ -796,19 +794,19 @@ def _build_compact_banner() -> str:
     """Build a compact banner that fits the current terminal width."""
     w = min(shutil.get_terminal_size().columns - 2, 64)
     if w < 30:
-        return "\n[#FFBF00]APOLLO AGENT[/] [dim #B8860B]- Nous Research[/]\n"
+        return "\n[#E88A5A]☀ APOLLO[/] [dim #7D796E]- Nous Research[/]\n"
     inner = w - 2  # inside the box border
     bar = "═" * w
-    line1 = "APOLLO AGENT - AI Agent Framework"
-    line2 = "Messenger of the Digital Gods  ·  Nous Research"
+    line1 = "☀ APOLLO - AI Learning Agent"
+    line2 = "Illuminating the path to knowledge  ·  Nous Research"
     # Truncate and pad to fit
     line1 = line1[:inner - 2].ljust(inner - 2)
     line2 = line2[:inner - 2].ljust(inner - 2)
     return (
-        f"\n[bold #FFD700]╔{bar}╗[/]\n"
-        f"[bold #FFD700]║[/] [#FFBF00]{line1}[/] [bold #FFD700]║[/]\n"
-        f"[bold #FFD700]║[/] [dim #B8860B]{line2}[/] [bold #FFD700]║[/]\n"
-        f"[bold #FFD700]╚{bar}╝[/]\n"
+        f"\n[bold #FEE66E]╔{bar}╗[/]\n"
+        f"[bold #FEE66E]║[/] [#E88A5A]{line1}[/] [bold #FEE66E]║[/]\n"
+        f"[bold #FEE66E]║[/] [dim #7D796E]{line2}[/] [bold #FEE66E]║[/]\n"
+        f"[bold #FEE66E]╚{bar}╝[/]\n"
     )
 
 
@@ -883,7 +881,7 @@ def _format_context_length(tokens: int) -> str:
 
 def build_welcome_banner(console: Console, model: str, cwd: str, tools: List[dict] = None, enabled_toolsets: List[str] = None, session_id: str = None, context_length: int = None):
     """
-    Build and print a Claude Code-style welcome banner with caduceus on left and info on right.
+    Build and print a Claude Code-style welcome banner with lyre on left and info on right.
     
     Args:
         console: Rich Console instance for printing
@@ -910,25 +908,25 @@ def build_welcome_banner(console: Console, model: str, cwd: str, tools: List[dic
     layout_table.add_column("left", justify="center")
     layout_table.add_column("right", justify="left")
     
-    # Build left content: caduceus + model info
+    # Build left content: lyre + model info
     # Resolve skin colors for the banner
     try:
         from apollo_cli.skin_engine import get_active_skin
         _bskin = get_active_skin()
-        _accent = _bskin.get_color("banner_accent", "#FFBF00")
-        _dim = _bskin.get_color("banner_dim", "#B8860B")
-        _text = _bskin.get_color("banner_text", "#FFF8DC")
-        _session_c = _bskin.get_color("session_border", "#8B8682")
-        _title_c = _bskin.get_color("banner_title", "#FFD700")
-        _border_c = _bskin.get_color("banner_border", "#CD7F32")
-        _agent_name = _bskin.get_branding("agent_name", "Apollo Agent")
+        _accent = _bskin.get_color("banner_accent", "#E88A5A")
+        _dim = _bskin.get_color("banner_dim", "#7D796E")
+        _text = _bskin.get_color("banner_text", "#FFF2CC")
+        _session_c = _bskin.get_color("session_border", "#7D796E")
+        _title_c = _bskin.get_color("banner_title", "#FEE66E")
+        _border_c = _bskin.get_color("banner_border", "#4A4E6F")
+        _agent_name = _bskin.get_branding("agent_name", "Apollo")
     except Exception:
         _bskin = None
-        _accent, _dim, _text = "#FFBF00", "#B8860B", "#FFF8DC"
-        _session_c, _title_c, _border_c = "#8B8682", "#FFD700", "#CD7F32"
-        _agent_name = "Apollo Agent"
+        _accent, _dim, _text = "#E88A5A", "#7D796E", "#FFF2CC"
+        _session_c, _title_c, _border_c = "#7D796E", "#FEE66E", "#4A4E6F"
+        _agent_name = "Apollo"
 
-    _hero = _bskin.banner_hero if hasattr(_bskin, 'banner_hero') and _bskin.banner_hero else APOLLO_CADUCEUS
+    _hero = _bskin.banner_hero if hasattr(_bskin, 'banner_hero') and _bskin.banner_hero else APOLLO_LYRE
     left_lines = ["", _hero, ""]
     
     # Shorten model name for display
@@ -1082,7 +1080,7 @@ def build_welcome_banner(console: Console, model: str, cwd: str, tools: List[dic
         console.print(_logo)
         console.print()
     
-    # Print the panel with caduceus and info
+    # Print the panel with lyre and info
     console.print(outer_panel)
 
 
@@ -1647,7 +1645,7 @@ class ApolloCLI:
         """Display the welcome banner in Claude Code style."""
         self.console.clear()
         
-        # Auto-compact for narrow terminals — the full banner with caduceus
+        # Auto-compact for narrow terminals — the full banner with lyre
         # + tool list needs ~80 columns minimum to render without wrapping.
         term_width = shutil.get_terminal_size().columns
         use_compact = self.compact or term_width < 80
@@ -1716,14 +1714,14 @@ class ApolloCLI:
             if session_meta.get("title"):
                 title_part = f' "{session_meta["title"]}"'
             self.console.print(
-                f"[#DAA520]↻ Resumed session [bold]{self.session_id}[/bold]"
+                f"[#E88A5A]↻ Resumed session [bold]{self.session_id}[/bold]"
                 f"{title_part} "
                 f"({msg_count} user message{'s' if msg_count != 1 else ''}, "
                 f"{len(restored)} total messages)[/]"
             )
         else:
             self.console.print(
-                f"[#DAA520]Session {self.session_id} found but has no "
+                f"[#E88A5A]Session {self.session_id} found but has no "
                 f"messages. Starting fresh.[/]"
             )
             return False
@@ -1849,14 +1847,14 @@ class ApolloCLI:
         try:
             from apollo_cli.skin_engine import get_active_skin
             _skin = get_active_skin()
-            _history_text_c = _skin.get_color("banner_text", "#FFF8DC")
-            _session_label_c = _skin.get_color("session_label", "#DAA520")
-            _session_border_c = _skin.get_color("session_border", "#8B8682")
+            _history_text_c = _skin.get_color("banner_text", "#FFF2CC")
+            _session_label_c = _skin.get_color("session_label", "#E88A5A")
+            _session_border_c = _skin.get_color("session_border", "#7D796E")
             _assistant_label_c = _skin.get_color("ui_ok", "#8FBC8F")
         except Exception:
-            _history_text_c = "#FFF8DC"
-            _session_label_c = "#DAA520"
-            _session_border_c = "#8B8682"
+            _history_text_c = "#FFF2CC"
+            _session_label_c = "#E88A5A"
+            _session_border_c = "#7D796E"
             _assistant_label_c = "#8FBC8F"
 
         lines = Text()
@@ -2082,15 +2080,15 @@ class ApolloCLI:
         # Build status line with proper markup
         toolsets_info = ""
         if self.enabled_toolsets and "all" not in self.enabled_toolsets:
-            toolsets_info = f" [dim #B8860B]·[/] [#CD7F32]toolsets: {', '.join(self.enabled_toolsets)}[/]"
+            toolsets_info = f" [dim #7D796E]·[/] [#4A4E6F]toolsets: {', '.join(self.enabled_toolsets)}[/]"
 
-        provider_info = f" [dim #B8860B]·[/] [dim]provider: {self.provider}[/]"
+        provider_info = f" [dim #7D796E]·[/] [dim]provider: {self.provider}[/]"
         if self._provider_source:
-            provider_info += f" [dim #B8860B]·[/] [dim]auth: {self._provider_source}[/]"
+            provider_info += f" [dim #7D796E]·[/] [dim]auth: {self._provider_source}[/]"
 
         self.console.print(
-            f"  {api_indicator} [#FFBF00]{model_short}[/] "
-            f"[dim #B8860B]·[/] [bold cyan]{tool_count} tools[/]"
+            f"  {api_indicator} [#E88A5A]{model_short}[/] "
+            f"[dim #7D796E]·[/] [bold cyan]{tool_count} tools[/]"
             f"{toolsets_info}{provider_info}"
         )
     
@@ -3204,7 +3202,7 @@ class ApolloCLI:
                     if full_name == typed_base:
                         # Already an exact token — no expansion possible; fall through
                         self.console.print(f"[bold red]Unknown command: {cmd_lower}[/]")
-                        self.console.print("[dim #B8860B]Type /help for available commands[/]")
+                        self.console.print("[dim #7D796E]Type /help for available commands[/]")
                     else:
                         remainder = cmd_original.strip()[len(typed_base):]
                         full_cmd = full_name + remainder
@@ -3214,7 +3212,7 @@ class ApolloCLI:
                     self.console.print(f"[dim]Did you mean: {', '.join(sorted(matches))}?[/]")
                 else:
                     self.console.print(f"[bold red]Unknown command: {cmd_lower}[/]")
-                    self.console.print("[dim #B8860B]Type /help for available commands[/]")
+                    self.console.print("[dim #7D796E]Type /help for available commands[/]")
         
         return True
     
@@ -3291,12 +3289,12 @@ class ApolloCLI:
                         from apollo_cli.skin_engine import get_active_skin
                         _skin = get_active_skin()
                         label = _skin.get_branding("response_label", "Apollo")
-                        _resp_color = _skin.get_color("response_border", "#CD7F32")
-                        _resp_text = _skin.get_color("banner_text", "#FFF8DC")
+                        _resp_color = _skin.get_color("response_border", "#FEE66E")
+                        _resp_text = _skin.get_color("banner_text", "#FFF2CC")
                     except Exception:
                         label = "Apollo"
-                        _resp_color = "#CD7F32"
-                        _resp_text = "#FFF8DC"
+                        _resp_color = "#FEE66E"
+                        _resp_text = "#FFF2CC"
 
                     _chat_console = ChatConsole()
                     _chat_console.print(Panel(
@@ -4611,12 +4609,12 @@ class ApolloCLI:
                     from apollo_cli.skin_engine import get_active_skin
                     _skin = get_active_skin()
                     label = _skin.get_branding("response_label", "Apollo")
-                    _resp_color = _skin.get_color("response_border", "#CD7F32")
-                    _resp_text = _skin.get_color("banner_text", "#FFF8DC")
+                    _resp_color = _skin.get_color("response_border", "#FEE66E")
+                    _resp_text = _skin.get_color("banner_text", "#FFF2CC")
                 except Exception:
                     label = "Apollo"
-                    _resp_color = "#CD7F32"
-                    _resp_text = "#FFF8DC"
+                    _resp_color = "#FEE66E"
+                    _resp_text = "#FFF2CC"
 
                 is_error_response = result and (result.get("failed") or result.get("partial"))
                 if use_streaming_tts and _streaming_box_opened and not is_error_response:
@@ -4778,7 +4776,7 @@ class ApolloCLI:
         if self._command_running:
             return [("class:prompt-working", f"{self._command_spinner_frame()} {state_suffix}")]
         if self._agent_running:
-            return [("class:prompt-working", f"⚕ {state_suffix}")]
+            return [("class:prompt-working", f"☀ {state_suffix}")]
         if self._voice_mode:
             return [("class:voice-prompt", f"🎤 {state_suffix}")]
         return [("class:prompt", symbol)]
@@ -4831,10 +4829,10 @@ class ApolloCLI:
             from apollo_cli.skin_engine import get_active_skin
             _welcome_skin = get_active_skin()
             _welcome_text = _welcome_skin.get_branding("welcome", "Welcome to Apollo Agent! Type your message or /help for commands.")
-            _welcome_color = _welcome_skin.get_color("banner_text", "#FFF8DC")
+            _welcome_color = _welcome_skin.get_color("banner_text", "#FFF2CC")
         except Exception:
             _welcome_text = "Welcome to Apollo Agent! Type your message or /help for commands."
-            _welcome_color = "#FFF8DC"
+            _welcome_color = "#FFF2CC"
         self.console.print(f"[{_welcome_color}]{_welcome_text}[/]")
         self.console.print()
         
@@ -5702,40 +5700,40 @@ class ApolloCLI:
         
         # Style for the application
         self._tui_style_base = {
-            'input-area': '#FFF8DC',
+            'input-area': '#FFF2CC',
             'placeholder': '#555555 italic',
-            'prompt': '#FFF8DC',
+            'prompt': '#FFF2CC',
             'prompt-working': '#888888 italic',
             'hint': '#555555 italic',
-            # Bronze horizontal rules around the input area
-            'input-rule': '#CD7F32',
+            # Gold horizontal rules around the input area
+            'input-rule': '#4A4E6F',
             # Clipboard image attachment badges
             'image-badge': '#87CEEB bold',
-            'completion-menu': 'bg:#1a1a2e #FFF8DC',
-            'completion-menu.completion': 'bg:#1a1a2e #FFF8DC',
-            'completion-menu.completion.current': 'bg:#333355 #FFD700',
-            'completion-menu.meta.completion': 'bg:#1a1a2e #888888',
-            'completion-menu.meta.completion.current': 'bg:#333355 #FFBF00',
+            'completion-menu': 'bg:#181520 #FFF2CC',
+            'completion-menu.completion': 'bg:#181520 #FFF2CC',
+            'completion-menu.completion.current': 'bg:#221e2c #FEE66E',
+            'completion-menu.meta.completion': 'bg:#181520 #888888',
+            'completion-menu.meta.completion.current': 'bg:#221e2c #E88A5A',
             # Clarify question panel
-            'clarify-border': '#CD7F32',
-            'clarify-title': '#FFD700 bold',
-            'clarify-question': '#FFF8DC bold',
+            'clarify-border': '#4A4E6F',
+            'clarify-title': '#FEE66E bold',
+            'clarify-question': '#FFF2CC bold',
             'clarify-choice': '#AAAAAA',
-            'clarify-selected': '#FFD700 bold',
-            'clarify-active-other': '#FFD700 italic',
-            'clarify-countdown': '#CD7F32',
+            'clarify-selected': '#FEE66E bold',
+            'clarify-active-other': '#FEE66E italic',
+            'clarify-countdown': '#4A4E6F',
             # Sudo password panel
             'sudo-prompt': '#FF6B6B bold',
-            'sudo-border': '#CD7F32',
+            'sudo-border': '#4A4E6F',
             'sudo-title': '#FF6B6B bold',
-            'sudo-text': '#FFF8DC',
+            'sudo-text': '#FFF2CC',
             # Dangerous command approval panel
-            'approval-border': '#CD7F32',
+            'approval-border': '#4A4E6F',
             'approval-title': '#FF8C00 bold',
-            'approval-desc': '#FFF8DC bold',
+            'approval-desc': '#FFF2CC bold',
             'approval-cmd': '#AAAAAA italic',
             'approval-choice': '#AAAAAA',
-            'approval-selected': '#FFD700 bold',
+            'approval-selected': '#FEE66E bold',
             # Voice mode
             'voice-prompt': '#87CEEB',
             'voice-recording': '#FF4444 bold',

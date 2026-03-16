@@ -45,7 +45,7 @@ apollo -w -q "Fix issue #123"     # Single query in worktree
 ┌─────────────────────────────────────────────────┐
 │  APOLLO-AGENT ASCII Logo                        │
 │  ┌─────────────┐ ┌────────────────────────────┐ │
-│  │  Caduceus   │ │ Model: claude-sonnet-4     │ │
+│  │  Lyre       │ │ Model: claude-sonnet-4     │ │
 │  │  ASCII Art  │ │ Terminal: local            │ │
 │  │             │ │ Working Dir: /home/user    │ │
 │  │             │ │ Available Tools: 19        │ │

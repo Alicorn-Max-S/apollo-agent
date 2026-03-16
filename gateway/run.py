@@ -3269,7 +3269,7 @@ class GatewayRunner:
             return f"✗ Failed to start update: {e}"
 
         self._schedule_update_notification_watch()
-        return "⚕ Starting Apollo update… I'll notify you when it's done."
+        return "☀ Starting Apollo update… I'll notify you when it's done."
 
     def _schedule_update_notification_watch(self) -> None:
         """Ensure a background task is watching for update completion."""

@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Apollo Agent',
-  tagline: 'The self-improving AI agent',
+  tagline: 'The AI learning companion that illuminates your path',
   favicon: 'img/favicon.ico',
 
   url: 'https://apollo-agent.nousresearch.com',

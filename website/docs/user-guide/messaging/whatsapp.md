@@ -139,7 +139,7 @@ Apollo supports voice on WhatsApp:
 
 - **Incoming:** Voice messages (`.ogg` opus) are automatically transcribed using Whisper (requires `VOICE_TOOLS_OPENAI_KEY`)
 - **Outgoing:** TTS responses are sent as MP3 audio file attachments
-- Agent responses are prefixed with "⚕ **Apollo Agent**" for easy identification
+- Agent responses are prefixed with "☀ **Apollo**" for easy identification
 
 ---
 

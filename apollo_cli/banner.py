@@ -64,34 +64,32 @@ def _skin_branding(key: str, fallback: str) -> str:
 
 from apollo_cli import __version__ as VERSION, __release_date__ as RELEASE_DATE
 
-APOLLO_AGENT_LOGO = """[bold #FFD700]██╗  ██╗███████╗██████╗ ███╗   ███╗███████╗███████╗       █████╗  ██████╗ ███████╗███╗   ██╗████████╗[/]
-[bold #FFD700]██║  ██║██╔════╝██╔══██╗████╗ ████║██╔════╝██╔════╝      ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝[/]
-[#FFBF00]███████║█████╗  ██████╔╝██╔████╔██║█████╗  ███████╗█████╗███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║[/]
-[#FFBF00]██╔══██║██╔══╝  ██╔══██╗██║╚██╔╝██║██╔══╝  ╚════██║╚════╝██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║[/]
-[#CD7F32]██║  ██║███████╗██║  ██║██║ ╚═╝ ██║███████╗███████║      ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║[/]
-[#CD7F32]╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚══════╝      ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝[/]"""
+APOLLO_AGENT_LOGO = """[bold #FEE66E] █████╗ ██████╗  ██████╗ ██╗     ██╗      ██████╗ [/]
+[bold #FEE66E]██╔══██╗██╔══██╗██╔═══██╗██║     ██║     ██╔═══██╗[/]
+[#E88A5A]███████║██████╔╝██║   ██║██║     ██║     ██║   ██║[/]
+[#E88A5A]██╔══██║██╔═══╝ ██║   ██║██║     ██║     ██║   ██║[/]
+[#4A4E6F]██║  ██║██║     ╚██████╔╝███████╗███████╗╚██████╔╝[/]
+[#4A4E6F]╚═╝  ╚═╝╚═╝      ╚═════╝ ╚══════╝╚══════╝ ╚═════╝ [/]"""
 
-APOLLO_CADUCEUS = """[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⣀⣀⠀⢀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⣿⣿⣇⠸⣿⣿⠇⣸⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⢀⣠⣴⣶⠿⠋⣩⡿⣿⡿⠻⣿⡇⢠⡄⢸⣿⠟⢿⣿⢿⣍⠙⠿⣶⣦⣄⡀⠀[/]
-[#FFBF00]⠀⠀⠉⠉⠁⠶⠟⠋⠀⠉⠀⢀⣈⣁⡈⢁⣈⣁⡀⠀⠉⠀⠙⠻⠶⠈⠉⠉⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⡿⠛⢁⡈⠛⢿⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFD700]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠿⣿⣦⣤⣈⠁⢠⣴⣿⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⢿⣿⣦⡉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#FFBF00]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢷⣦⣈⠛⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣴⠦⠈⠙⠿⣦⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#CD7F32]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣤⡈⠁⢤⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠷⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠑⢶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠁⢰⡆⠈⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠈⣡⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]
-[#B8860B]⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀[/]"""
+APOLLO_LYRE = """[#FEE66E]⠀⠀⠀⠀⠀⠀⢀⣀⣀⡀⠀⠀⠀⡀⣀⣀⡀⠀⠀⠀⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠀⢀⣾⠟⠉⠉⠛⠂⠀⠐⠛⠉⠉⠻⣷⡀⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⠀⣾⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣷⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠘⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣼⠃⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠀⠈⠻⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣴⠟⠁⠀⠀⠀⠀[/]
+[#7D796E]⠀⠀⠀⠀⠀⠀⢈⣹⣷⡄⠀⠀⠀⠀⢠⣾⣏⡁⠀⠀⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⠀⠀⠀⣿⠁⠈⡇⠀⠀⠀⠀⢸⠁⠈⣿⠀⠀⠀⠀⠀⠀[/]
+[#E88A5A]⠀⠀⠀⠀⠀⠀⣿⠀⠀⡇⠀⠀⠀⠀⢸⠀⠀⣿⠀⠀⠀⠀⠀⠀[/]
+[#FEE66E]⠀⠀⠀⠀⠀⠀⣿⡀⢀⡇⠀⠀⠀⠀⢸⡀⠀⣿⠀⠀⠀⠀⠀⠀[/]
+[#7D796E]⠀⠀⠀⠀⠀⠀⠘⠛⠛⠃⠀⠀⠀⠀⠘⠛⠛⠃⠀⠀⠀⠀⠀⠀[/]
+[#4A4E6F]⠀⠀⠀⠀⠀━━━━━━━━━━━━━━━━━⠀⠀⠀⠀⠀[/]
+[dim #7D796E]⠀⠀⠀⠀⠀⠀⠀illuminating knowledge⠀⠀⠀⠀⠀⠀⠀[/]"""
 
 COMPACT_BANNER = """
-[bold #FFD700]╔══════════════════════════════════════════════════════════════╗[/]
-[bold #FFD700]║[/]  [#FFBF00]⚕ APOLLO AGENT[/] [dim #B8860B]- AI Agent Framework[/]              [bold #FFD700]║[/]
-[bold #FFD700]║[/]  [#CD7F32]Messenger of the Digital Gods[/]    [dim #B8860B]Nous Research[/]   [bold #FFD700]║[/]
-[bold #FFD700]╚══════════════════════════════════════════════════════════════╝[/]
+[bold #FEE66E]╔══════════════════════════════════════════════════════════════╗[/]
+[bold #FEE66E]║[/]  [#E88A5A]☀ APOLLO[/] [dim #7D796E]- AI Learning Agent[/]                    [bold #FEE66E]║[/]
+[bold #FEE66E]║[/]  [#4A4E6F]Illuminating the path to knowledge[/] [dim #7D796E]Nous Research[/] [bold #FEE66E]║[/]
+[bold #FEE66E]╚══════════════════════════════════════════════════════════════╝[/]
 """
 
 
@@ -241,7 +239,7 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
                          session_id: str = None,
                          get_toolset_for_tool=None,
                          context_length: int = None):
-    """Build and print a welcome banner with caduceus on left and info on right.
+    """Build and print a welcome banner with lyre on left and info on right.
 
     Args:
         console: Rich Console instance.
@@ -270,12 +268,12 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
     layout_table.add_column("right", justify="left")
 
     # Resolve skin colors once for the entire banner
-    accent = _skin_color("banner_accent", "#FFBF00")
-    dim = _skin_color("banner_dim", "#B8860B")
-    text = _skin_color("banner_text", "#FFF8DC")
+    accent = _skin_color("banner_accent", "#E88A5A")
+    dim = _skin_color("banner_dim", "#7D796E")
+    text = _skin_color("banner_text", "#FFF2CC")
     session_color = _skin_color("session_border", "#8B8682")
 
-    left_lines = ["", APOLLO_CADUCEUS, ""]
+    left_lines = ["", APOLLO_LYRE, ""]
     model_short = model.split("/")[-1] if "/" in model else model
     if len(model_short) > 28:
         model_short = model_short[:25] + "..."
@@ -346,13 +344,13 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
                 else:
                     colored_names.append(f"[{text}]{name}[/]")
             tools_str = ", ".join(colored_names)
-        right_lines.append(f"[dim #B8860B]{toolset}:[/] {tools_str}")
+        right_lines.append(f"[dim #7D796E]{toolset}:[/] {tools_str}")
 
     for toolset in display_order:
         _render_ts_line(toolset, dim_all=(toolset in other_ts))
 
     if remaining_toolsets > 0:
-        right_lines.append(f"[dim #B8860B](and {remaining_toolsets} more toolsets...)[/]")
+        right_lines.append(f"[dim #7D796E](and {remaining_toolsets} more toolsets...)[/]")
 
     # MCP Servers section (only if configured)
     try:
@@ -363,12 +361,12 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
 
     if mcp_status:
         right_lines.append("")
-        right_lines.append("[bold #FFBF00]MCP Servers[/]")
+        right_lines.append("[bold #E88A5A]MCP Servers[/]")
         for srv in mcp_status:
             if srv["connected"]:
                 right_lines.append(
-                    f"[dim #B8860B]{srv['name']}[/] [#FFF8DC]({srv['transport']})[/] "
-                    f"[dim #B8860B]—[/] [#FFF8DC]{srv['tools']} tool(s)[/]"
+                    f"[dim #7D796E]{srv['name']}[/] [#FFF2CC]({srv['transport']})[/] "
+                    f"[dim #7D796E]—[/] [#FFF2CC]{srv['tools']} tool(s)[/]"
                 )
             else:
                 right_lines.append(
@@ -432,8 +430,8 @@ def build_welcome_banner(console: Console, model: str, cwd: str,
     layout_table.add_row(left_content, right_content)
 
     agent_name = _skin_branding("agent_name", "Apollo Agent")
-    title_color = _skin_color("banner_title", "#FFD700")
-    border_color = _skin_color("banner_border", "#CD7F32")
+    title_color = _skin_color("banner_title", "#FEE66E")
+    border_color = _skin_color("banner_border", "#4A4E6F")
     outer_panel = Panel(
         layout_table,
         title=f"[bold {title_color}]{agent_name} v{VERSION} ({RELEASE_DATE})[/]",
