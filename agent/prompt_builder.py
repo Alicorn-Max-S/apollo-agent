@@ -153,6 +153,128 @@ SCHOOL_SKILLS_SUMMARY = (
     "4. No Python code changes are needed — detection is purely from frontmatter metadata."
 )
 
+
+# ─────────────────────────────────────────────────────────────────────
+# School onboarding context — read at runtime so the agent can adapt
+# ─────────────────────────────────────────────────────────────────────
+
+def build_school_onboarding_context() -> str:
+    """Build a system prompt section from the school onboarding status.
+
+    Reads ``school_onboarding`` from config.yaml and returns guidance
+    that tells the agent which services are available and how to handle
+    tasks when a service was skipped.
+    """
+    try:
+        from apollo_cli.config import load_config
+        config = load_config()
+    except Exception:
+        return ""
+
+    onboarding = config.get("school_onboarding")
+    if not onboarding or not isinstance(onboarding, dict):
+        return ""
+
+    lines = ["## School Onboarding Context\n"]
+
+    # User profile
+    profile = onboarding.get("user_profile", {})
+    if profile.get("name"):
+        lines.append(f"User's name: {profile['name']}")
+    if profile.get("school"):
+        lines.append(f"School: {profile['school']}")
+    if profile.get("classes"):
+        lines.append(f"Classes: {', '.join(profile['classes'])}")
+    if profile.get("goals"):
+        lines.append(f"Goals: {', '.join(profile['goals'])}")
+    if profile.get("timezone"):
+        lines.append(f"Timezone: {profile['timezone']}")
+    if profile.get("study_hours"):
+        lines.append(f"Preferred study hours: {profile['study_hours']}")
+
+    # Service availability
+    lines.append("\n### Service Status")
+    svc_map = {
+        "google_auth": "Google Workspace (Calendar, Drive, Gmail)",
+        "canvas": "Canvas LMS",
+        "todoist": "Todoist",
+        "notion": "Notion",
+    }
+    for key, label in svc_map.items():
+        svc = onboarding.get(key, {})
+        if svc.get("configured"):
+            lines.append(f"- {label}: CONFIGURED — use freely")
+        elif svc.get("skipped"):
+            lines.append(f"- {label}: NOT SET UP (user skipped)")
+        else:
+            lines.append(f"- {label}: NOT SET UP")
+
+    # Adaptation rules for skipped services
+    lines.append("\n### Adaptation Rules")
+
+    todoist_svc = onboarding.get("todoist", {})
+    if not todoist_svc.get("configured"):
+        alt = todoist_svc.get("alternative", "verbal")
+        if alt == "verbal":
+            lines.append(
+                "- Todoist is not configured. When tasks need to be saved, "
+                "tell the user verbally (list them out) instead of trying to use Todoist."
+            )
+        elif alt == "text_file":
+            lines.append(
+                "- Todoist is not configured. Save tasks to ~/.apollo/tasks.txt "
+                "using the terminal tool. Append each task on a new line with the date."
+            )
+        elif alt == "notion":
+            lines.append(
+                "- Todoist is not configured. Try to save tasks to Notion instead "
+                "(if Notion is configured)."
+            )
+        elif alt == "todoist_later":
+            lines.append(
+                "- Todoist is not configured yet. Occasionally remind the user they "
+                "can set it up with 'apollo setup school' for better task management."
+            )
+
+    if not onboarding.get("google_auth", {}).get("configured"):
+        lines.append(
+            "- Google Workspace is not configured. Do not attempt to use Google "
+            "Calendar, Drive, or Gmail skills. When scheduling is needed, work "
+            "with Todoist alone or ask the user for their schedule."
+        )
+
+    if not onboarding.get("canvas", {}).get("configured"):
+        lines.append(
+            "- Canvas LMS is not configured. Do not attempt to fetch assignments "
+            "or grades. Ask the user to provide assignment details manually."
+        )
+
+    if not onboarding.get("notion", {}).get("configured"):
+        lines.append(
+            "- Notion is not configured. Do not attempt to use the Notion skill."
+        )
+
+    # Preferences
+    prefs = onboarding.get("preferences", {})
+    if prefs:
+        lines.append("\n### User Preferences")
+        if prefs.get("note_taking"):
+            lines.append(f"- Note-taking: {prefs['note_taking']}")
+        if prefs.get("study_style"):
+            lines.append(f"- Study style: {prefs['study_style']}")
+        if prefs.get("assignment_approach"):
+            approach_labels = {
+                "understanding": "Prioritize understanding — explain concepts, don't just give answers",
+                "efficiency": "Prioritize efficiency — help get things done quickly",
+                "balance": "Balance — explain when stuck, efficient otherwise",
+            }
+            lines.append(f"- Assignment approach: {approach_labels.get(prefs['assignment_approach'], prefs['assignment_approach'])}")
+        if prefs.get("additional_notes"):
+            lines.append(f"- Additional: {prefs['additional_notes']}")
+
+    return "\n".join(lines) + "\n"
+
+
 PLATFORM_HINTS = {
     "whatsapp": (
         "You are on a text messaging communication platform, WhatsApp. "

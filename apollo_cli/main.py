@@ -2532,7 +2532,7 @@ For more help on a command:
     setup_parser.add_argument(
         "section",
         nargs="?",
-        choices=["model", "terminal", "gateway", "tools", "agent"],
+        choices=["model", "terminal", "gateway", "tools", "agent", "school"],
         default=None,
         help="Run a specific setup section instead of the full wizard"
     )

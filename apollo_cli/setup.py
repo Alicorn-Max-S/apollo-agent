@@ -588,6 +588,27 @@ def _print_setup_summary(config: dict, apollo_home):
         print_warning("or edit ~/.apollo/.env directly to add the missing API keys.")
         print()
 
+    # School onboarding summary
+    school_status = config.get("school_onboarding", {})
+    if school_status.get("completed"):
+        print()
+        print_header("School Setup")
+        school_services = [
+            ("Google Workspace", "google_auth"),
+            ("Canvas LMS", "canvas"),
+            ("Todoist", "todoist"),
+            ("Notion", "notion"),
+        ]
+        for label, key in school_services:
+            svc = school_status.get(key, {})
+            if svc.get("configured"):
+                print(f"   {color('✓', Colors.GREEN)} {label}")
+            else:
+                print(f"   {color('–', Colors.DIM)} {label} {color('(not set up)', Colors.DIM)}")
+        print()
+        print_info("Run 'apollo setup school' to reconfigure school tools.")
+        print()
+
     # Done banner
     print()
     print(
@@ -2479,12 +2500,19 @@ def _offer_openclaw_migration(apollo_home: Path) -> bool:
 # Main Wizard Orchestrator
 # =============================================================================
 
+def _setup_school_wrapper(config: dict):
+    """Wrapper to call school setup from the section menu."""
+    from apollo_cli.school_setup import setup_school
+    setup_school(config)
+
+
 SETUP_SECTIONS = [
     ("model", "Model & Provider", setup_model_provider),
     ("terminal", "Terminal Backend", setup_terminal_backend),
     ("gateway", "Messaging Platforms (Gateway)", setup_gateway),
     ("tools", "Tools", setup_tools),
     ("agent", "Agent Settings", setup_agent_settings),
+    ("school", "School Onboarding", _setup_school_wrapper),
 ]
 
 
@@ -2605,6 +2633,7 @@ def run_setup_wizard(args):
             "Messaging Platforms (Gateway)",
             "Tools",
             "Agent Settings",
+            "School Onboarding (Canvas, Todoist, Google, etc.)",
             "---",
             "Exit",
         ]
@@ -2620,14 +2649,14 @@ def run_setup_wizard(args):
         elif choice == 1:
             # Full setup — fall through to run all sections
             pass
-        elif choice in (2, 8):
+        elif choice in (2, 9):
             # Separator — treat as exit
             print_info("Exiting. Run 'apollo setup' again when ready.")
             return
-        elif choice == 9:
+        elif choice == 10:
             print_info("Exiting. Run 'apollo setup' again when ready.")
             return
-        elif 3 <= choice <= 7:
+        elif 3 <= choice <= 8:
             # Individual section
             section_idx = choice - 3
             _, label, func = SETUP_SECTIONS[section_idx]
@@ -2644,6 +2673,7 @@ def run_setup_wizard(args):
         print_info("  3. Messaging Platforms — connect Telegram, Discord, etc.")
         print_info("  4. Tools — configure TTS, web search, image generation, etc.")
         print_info("  5. Agent Settings — iterations, compression, session reset")
+        print_info("  6. School Onboarding — Canvas, Todoist, Google, classes & more")
         print()
         print_info("Press Enter to begin, or Ctrl+C to exit.")
         try:
@@ -2680,6 +2710,12 @@ def run_setup_wizard(args):
 
     # Section 5: Tools
     setup_tools(config, first_install=not is_existing)
+
+    # Section 6: School Onboarding
+    print()
+    if prompt_yes_no("Set up school-related tools (Canvas, Todoist, Google, etc.)?", True):
+        from apollo_cli.school_setup import setup_school
+        setup_school(config)
 
     # Save and show summary
     save_config(config)
