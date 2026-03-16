@@ -1305,6 +1305,14 @@ class DiscordAdapter(BasePlatformAdapter):
 
         @tree.command(name="personality", description="Set a personality")
         @discord.app_commands.describe(name="Personality name. Leave empty to list available.")
+        @discord.app_commands.choices(name=[
+            discord.app_commands.Choice(name="The Bro — chill vibes, no rush", value="bro"),
+            discord.app_commands.Choice(name="The Friend — warm but keeps you on track", value="friend"),
+            discord.app_commands.Choice(name="The Hard Ass — blunt, demanding, mean", value="hardass"),
+            discord.app_commands.Choice(name="The Sibling — annoying but has your back", value="sibling"),
+            discord.app_commands.Choice(name="The Assistant — neutral, just does the work", value="assistant"),
+            discord.app_commands.Choice(name="None — clear personality", value="none"),
+        ])
         async def slash_personality(interaction: discord.Interaction, name: str = ""):
             await self._run_simple_slash(interaction, f"/personality {name}".strip())
 
