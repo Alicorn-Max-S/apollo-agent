@@ -17,21 +17,21 @@ All fields are optional. Missing values inherit from the ``default`` skin.
 
     # Colors: hex values for Rich markup (banner, UI, response box)
     colors:
-      banner_border: "#CD7F32"            # Panel border color
-      banner_title: "#FFD700"             # Panel title text color
-      banner_accent: "#FFBF00"            # Section headers (Available Tools, etc.)
-      banner_dim: "#B8860B"               # Dim/muted text (separators, labels)
-      banner_text: "#FFF8DC"              # Body text (tool names, skill names)
-      ui_accent: "#FFBF00"               # General UI accent
+      banner_border: "#4A4E6F"            # Panel border color
+      banner_title: "#FEE66E"             # Panel title text color
+      banner_accent: "#E88A5A"            # Section headers (Available Tools, etc.)
+      banner_dim: "#7D796E"               # Dim/muted text (separators, labels)
+      banner_text: "#FFF2CC"              # Body text (tool names, skill names)
+      ui_accent: "#E88A5A"               # General UI accent
       ui_label: "#4dd0e1"                # UI labels
       ui_ok: "#4caf50"                   # Success indicators
       ui_error: "#ef5350"                # Error indicators
       ui_warn: "#ffa726"                 # Warning indicators
-      prompt: "#FFF8DC"                  # Prompt text color
-      input_rule: "#CD7F32"              # Input area horizontal rule
-      response_border: "#FFD700"         # Response box border (ANSI)
-      session_label: "#DAA520"           # Session label color
-      session_border: "#8B8682"          # Session ID dim color
+      prompt: "#FFF2CC"                  # Prompt text color
+      input_rule: "#4A4E6F"              # Input area horizontal rule
+      response_border: "#FEE66E"         # Response box border (ANSI)
+      session_label: "#E88A5A"           # Session label color
+      session_border: "#7D796E"          # Session ID dim color
 
     # Spinner: customize the animated spinner during API calls
     spinner:
@@ -50,9 +50,9 @@ All fields are optional. Missing values inherit from the ``default`` skin.
 
     # Branding: text strings used throughout the CLI
     branding:
-      agent_name: "Apollo Agent"          # Banner title, status display
+      agent_name: "Apollo"                 # Banner title, status display
       welcome: "Welcome message"          # Shown at CLI startup
-      goodbye: "Goodbye! ⚕"              # Shown on exit
+      goodbye: "Until next time ☀"         # Shown on exit
       response_label: " Apollo "       # Response box header label
       prompt_symbol: "❯ "                # Input prompt symbol
       help_header: "(^_^)? Commands"      # /help header text
@@ -68,8 +68,8 @@ USAGE
     from apollo_cli.skin_engine import get_active_skin, list_skins, set_active_skin
 
     skin = get_active_skin()
-    print(skin.colors["banner_title"])    # "#FFD700"
-    print(skin.get_branding("agent_name"))  # "Apollo Agent"
+    print(skin.colors["banner_title"])    # "#FEE66E"
+    print(skin.get_branding("agent_name"))  # "Apollo"
 
     set_active_skin("ares")               # Switch to built-in ares skin
     set_active_skin("mytheme")            # Switch to user skin from ~/.apollo/skins/
@@ -112,7 +112,7 @@ class SkinConfig:
     branding: Dict[str, str] = field(default_factory=dict)
     tool_prefix: str = "┊"
     banner_logo: str = ""    # Rich-markup ASCII art logo (replaces APOLLO_AGENT_LOGO)
-    banner_hero: str = ""    # Rich-markup hero art (replaces APOLLO_CADUCEUS)
+    banner_hero: str = ""    # Rich-markup hero art (replaces APOLLO_LYRE)
 
     def get_color(self, key: str, fallback: str = "") -> str:
         """Get a color value with fallback."""
@@ -143,34 +143,34 @@ class SkinConfig:
 _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
     "default": {
         "name": "default",
-        "description": "Classic Apollo — gold and kawaii",
+        "description": "Apollo — sun-gold and warm coral",
         "colors": {
-            "banner_border": "#CD7F32",
-            "banner_title": "#FFD700",
-            "banner_accent": "#FFBF00",
-            "banner_dim": "#B8860B",
-            "banner_text": "#FFF8DC",
-            "ui_accent": "#FFBF00",
-            "ui_label": "#4dd0e1",
+            "banner_border": "#4A4E6F",
+            "banner_title": "#FEE66E",
+            "banner_accent": "#E88A5A",
+            "banner_dim": "#7D796E",
+            "banner_text": "#FFF2CC",
+            "ui_accent": "#E88A5A",
+            "ui_label": "#FEE66E",
             "ui_ok": "#4caf50",
             "ui_error": "#ef5350",
             "ui_warn": "#ffa726",
-            "prompt": "#FFF8DC",
-            "input_rule": "#CD7F32",
-            "response_border": "#FFD700",
-            "session_label": "#DAA520",
-            "session_border": "#8B8682",
+            "prompt": "#FFF2CC",
+            "input_rule": "#4A4E6F",
+            "response_border": "#FEE66E",
+            "session_label": "#E88A5A",
+            "session_border": "#7D796E",
         },
         "spinner": {
             # Empty = use hardcoded defaults in display.py
         },
         "branding": {
-            "agent_name": "Apollo Agent",
-            "welcome": "Welcome to Apollo Agent! Type your message or /help for commands.",
-            "goodbye": "Goodbye! ⚕",
+            "agent_name": "Apollo",
+            "welcome": "Welcome to Apollo — your guiding light. Type /help for commands.",
+            "goodbye": "Until next time — the light endures. ☀",
             "response_label": " Apollo ",
             "prompt_symbol": "❯ ",
-            "help_header": "(^_^)? Available Commands",
+            "help_header": "☀ Available Commands",
         },
         "tool_prefix": "┊",
     },
@@ -260,9 +260,9 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
         },
         "spinner": {},
         "branding": {
-            "agent_name": "Apollo Agent",
-            "welcome": "Welcome to Apollo Agent! Type your message or /help for commands.",
-            "goodbye": "Goodbye! ⚕",
+            "agent_name": "Apollo",
+            "welcome": "Welcome to Apollo. Type your message or /help for commands.",
+            "goodbye": "Until next time. ☀",
             "response_label": " Apollo ",
             "prompt_symbol": "❯ ",
             "help_header": "[?] Available Commands",
@@ -291,12 +291,12 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
         },
         "spinner": {},
         "branding": {
-            "agent_name": "Apollo Agent",
-            "welcome": "Welcome to Apollo Agent! Type your message or /help for commands.",
-            "goodbye": "Goodbye! ⚕",
+            "agent_name": "Apollo",
+            "welcome": "Welcome to Apollo. Type your message or /help for commands.",
+            "goodbye": "Until next time. ☀",
             "response_label": " Apollo ",
             "prompt_symbol": "❯ ",
-            "help_header": "(^_^)? Available Commands",
+            "help_header": "☀ Available Commands",
         },
         "tool_prefix": "┊",
     },
@@ -653,7 +653,7 @@ def get_active_help_header(fallback: str = "(^_^)? Available Commands") -> str:
 
 
 
-def get_active_goodbye(fallback: str = "Goodbye! ⚕") -> str:
+def get_active_goodbye(fallback: str = "Until next time — the light endures. ☀") -> str:
     """Get the goodbye line from the active skin."""
     try:
         return get_active_skin().get_branding("goodbye", fallback)
@@ -673,11 +673,11 @@ def get_prompt_toolkit_style_overrides() -> Dict[str, str]:
     except Exception:
         return {}
 
-    prompt = skin.get_color("prompt", "#FFF8DC")
-    input_rule = skin.get_color("input_rule", "#CD7F32")
-    title = skin.get_color("banner_title", "#FFD700")
+    prompt = skin.get_color("prompt", "#FFF2CC")
+    input_rule = skin.get_color("input_rule", "#4A4E6F")
+    title = skin.get_color("banner_title", "#FEE66E")
     text = skin.get_color("banner_text", prompt)
-    dim = skin.get_color("banner_dim", "#555555")
+    dim = skin.get_color("banner_dim", "#7D796E")
     label = skin.get_color("ui_label", title)
     warn = skin.get_color("ui_warn", "#FF8C00")
     error = skin.get_color("ui_error", "#FF6B6B")

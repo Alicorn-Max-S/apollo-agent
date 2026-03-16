@@ -164,7 +164,7 @@ const demoSequence = [
   { type: "prompt", text: "❯ " },
   {
     type: "type",
-    text: "Research the latest approaches to GRPO training and write a summary",
+    text: "Research transformer attention mechanisms and summarize for my study notes",
     delay: 30,
   },
   { type: "pause", ms: 600 },
@@ -172,35 +172,35 @@ const demoSequence = [
     type: "output",
     lines: [
       "",
-      '<span class="t-dim">  web_search "GRPO reinforcement learning 2026"       1.2s</span>',
+      '<span class="t-dim">  web_search "transformer attention mechanisms 2026"   1.2s</span>',
     ],
   },
   { type: "pause", ms: 400 },
   {
     type: "output",
     lines: [
-      '<span class="t-dim">  webscrape arxiv.org/abs/2402.03300                3.1s</span>',
+      '<span class="t-dim">  webscrape arxiv.org/abs/1706.03762                 3.1s</span>',
     ],
   },
   { type: "pause", ms: 400 },
   {
     type: "output",
     lines: [
-      '<span class="t-dim">  web_search "GRPO vs PPO ablation results"           0.9s</span>',
+      '<span class="t-dim">  web_search "multi-head attention visual guide"      0.9s</span>',
     ],
   },
   { type: "pause", ms: 400 },
   {
     type: "output",
     lines: [
-      '<span class="t-dim">  webscrape huggingface.co/blog/grpo                2.8s</span>',
+      '<span class="t-dim">  webscrape jalammar.github.io/illustrated-transformer  2.8s</span>',
     ],
   },
   { type: "pause", ms: 400 },
   {
     type: "output",
     lines: [
-      '<span class="t-dim">  write_file ~/research/grpo-summary.md               0.1s</span>',
+      '<span class="t-dim">  write_file ~/notes/attention-summary.md              0.1s</span>',
     ],
   },
   { type: "pause", ms: 500 },
@@ -208,13 +208,13 @@ const demoSequence = [
     type: "output",
     lines: [
       "",
-      '<span class="t-text">Done! I\'ve written a summary covering:</span>',
+      '<span class="t-text">Done! I\'ve written study notes covering:</span>',
       "",
-      '<span class="t-text">  <span class="t-green">✓</span> GRPO\'s group-relative advantage (no critic model needed)</span>',
-      '<span class="t-text">  <span class="t-green">✓</span> Comparison with PPO/DPO on reasoning benchmarks</span>',
-      '<span class="t-text">  <span class="t-green">✓</span> Implementation notes for Axolotl and TRL</span>',
+      '<span class="t-text">  <span class="t-green">✓</span> Self-attention: how queries, keys, and values work</span>',
+      '<span class="t-text">  <span class="t-green">✓</span> Multi-head attention and why it matters</span>',
+      '<span class="t-text">  <span class="t-green">✓</span> Positional encoding and the full architecture</span>',
       "",
-      '<span class="t-text">Saved to</span> <span class="t-accent">~/research/grpo-summary.md</span>',
+      '<span class="t-text">Saved to</span> <span class="t-accent">~/notes/attention-summary.md</span>',
     ],
   },
   { type: "pause", ms: 2500 },
@@ -223,7 +223,7 @@ const demoSequence = [
   { type: "prompt", text: "❯ " },
   {
     type: "type",
-    text: "Review the PR at NousResearch/apollo-agent#42 and fix any issues",
+    text: "Review my lab report on gradient descent and suggest improvements",
     delay: 30,
   },
   { type: "pause", ms: 600 },
@@ -231,35 +231,28 @@ const demoSequence = [
     type: "output",
     lines: [
       "",
-      '<span class="t-dim">  delegate_task "review PR #42 changes"                2.1s</span>',
+      '<span class="t-dim">  read_file ~/assignments/gradient-descent-report.md   0.3s</span>',
     ],
   },
   { type: "pause", ms: 500 },
   {
     type: "output",
     lines: [
-      '<span class="t-dim">  git diff main..pr-42                                 0.4s</span>',
+      '<span class="t-dim">  web_search "gradient descent convergence proofs"     1.4s</span>',
     ],
   },
   { type: "pause", ms: 400 },
   {
     type: "output",
     lines: [
-      '<span class="t-dim">  patch tools/registry.py                              0.1s</span>',
+      '<span class="t-dim">  session_search "gradient descent lecture notes"       0.9s</span>',
     ],
   },
   { type: "pause", ms: 400 },
   {
     type: "output",
     lines: [
-      '<span class="t-dim">  python -m pytest tests/ -x                           3.2s</span>',
-    ],
-  },
-  { type: "pause", ms: 400 },
-  {
-    type: "output",
-    lines: [
-      '<span class="t-dim">  git commit -m "fix: handle empty tool schemas"       0.3s</span>',
+      '<span class="t-dim">  write_file ~/assignments/report-feedback.md          0.1s</span>',
     ],
   },
   { type: "pause", ms: 500 },
@@ -267,13 +260,13 @@ const demoSequence = [
     type: "output",
     lines: [
       "",
-      '<span class="t-text">Found 2 issues in the PR and fixed both:</span>',
+      '<span class="t-text">Reviewed your report. Here\'s my feedback:</span>',
       "",
-      '<span class="t-text">  <span class="t-green">✓</span> Empty tool schema crash in registry.py — added guard</span>',
-      '<span class="t-text">  <span class="t-green">✓</span> Missing error handling in delegate_tool.py — added try/except</span>',
+      '<span class="t-text">  <span class="t-green">✓</span> Strong intuition on learning rate decay — well explained</span>',
+      '<span class="t-text">  <span class="t-green">✓</span> Section 3 needs a citation for the convergence bound</span>',
+      '<span class="t-text">  <span class="t-green">✓</span> Consider adding a comparison of SGD vs Adam optimizers</span>',
       "",
-      '<span class="t-text">Tests pass. Committed the fix and pushed to the PR branch.</span>',
-      '<span class="t-text">I also saved a</span> <span class="t-accent">skill</span> <span class="t-text">for this PR review pattern.</span>',
+      '<span class="t-text">Detailed feedback saved to</span> <span class="t-accent">~/assignments/report-feedback.md</span>',
     ],
   },
   { type: "pause", ms: 2500 },
@@ -443,7 +436,7 @@ function initNoiseOverlay() {
     fragmentShader,
     transparent: true,
     uniforms: {
-      uColor: { value: hexToVec3("#8090BB") },
+      uColor: { value: hexToVec3("#7D796E") },
       uDensity: { value: 0.1 },
       uDpr: { value: 1 },
       uOpacity: { value: 0.4 },
@@ -509,7 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!ticking) {
       requestAnimationFrame(() => {
         if (window.scrollY > 50) {
-          nav.style.borderBottomColor = "rgba(48, 80, 255, 0.15)";
+          nav.style.borderBottomColor = "rgba(254, 230, 110, 0.12)";
         } else {
           nav.style.borderBottomColor = "";
         }
