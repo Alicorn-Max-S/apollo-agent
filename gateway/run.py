@@ -2055,6 +2055,7 @@ class GatewayRunner:
         args = event.get_command_args().strip().lower()
         config_path = _apollo_home / 'config.yaml'
 
+        # Load personalities from config file, falling back to built-in defaults.
         try:
             if config_path.exists():
                 with open(config_path, 'r', encoding="utf-8") as f:
@@ -2067,8 +2068,16 @@ class GatewayRunner:
             config = {}
             personalities = {}
 
+        # Fall back to built-in defaults from apollo_cli/config.py
         if not personalities:
-            return "No personalities configured in `~/.apollo/config.yaml`"
+            try:
+                from apollo_cli.config import DEFAULT_CONFIG
+                personalities = DEFAULT_CONFIG.get("personalities", {})
+            except Exception:
+                personalities = {}
+
+        if not personalities:
+            return "No personalities configured."
 
         if not args:
             lines = ["🎭 **Available Personalities**\n"]
